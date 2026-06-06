@@ -7,6 +7,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
+  avatar_url: string | null;
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   user: User | null;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -24,6 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUser = async () => {
+    const response = await api.get('/api/me');
+    setUser(response.data);
+  };
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -37,8 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(storedToken);
 
       try {
-        const response = await api.get('/api/me');
-        setUser(response.data);
+        await fetchUser();
       } catch {
         localStorage.removeItem('token');
         setToken(null);
@@ -53,12 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (jwt: string) => {
     localStorage.setItem('token', jwt);
-
     setToken(jwt);
 
     try {
-      const response = await api.get('/api/me');
-      setUser(response.data);
+      await fetchUser();
     } catch (error) {
       localStorage.removeItem('token');
       setToken(null);
@@ -72,9 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.logout();
     } finally {
       localStorage.removeItem('token');
-
       setToken(null);
       setUser(null);
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      await fetchUser();
+    } catch {
+      // silent — user stays as-is if refresh fails
     }
   };
 
@@ -85,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         login,
         logout,
+        refreshUser,
         isAuthenticated: !!token && !!user,
         isLoading,
       }}

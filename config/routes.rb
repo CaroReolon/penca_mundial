@@ -7,7 +7,9 @@ Rails.application.routes.draw do
     }
   
   namespace :api do
-    get "me", to: "me#show"    
+    get  "me",         to: "me#show"
+    put  "me/avatar",  to: "avatar#update"
+    delete "me/avatar", to: "avatar#destroy"
     resources :matches, only: [:index]
 
     resources :tournaments, only: [:show, :index] do
@@ -15,6 +17,8 @@ Rails.application.routes.draw do
     end
 
     resources :predictions, only: [:index, :create, :update]
+
+    get 'users/:user_id/matches', to: 'user_matches#index'
   end
 
   get "up" => "rails/health#show", as: :rails_health_check

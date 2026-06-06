@@ -1,21 +1,13 @@
-class Api::MatchesController < ApplicationController
+class Api::UserMatchesController < ApplicationController
   before_action :authenticate_user!
 
   def index
+    target_user = User.find(params[:user_id])
+
     matches = Match
       .includes(:group, :home_team, :away_team)
-
-    matches =
-      case params[:status]
-      when "upcoming"
-        matches.where("kickoff_at > ?", Time.current)
-      when "past"
-        matches.where("kickoff_at <= ?", Time.current)
-      else
-        matches
-      end
-
-    matches = matches.order(:kickoff_at)
+      .where("kickoff_at <= ?", Time.current)
+      .order(:kickoff_at)
 
     render json: matches.map { |match|
       {
@@ -34,7 +26,7 @@ class Api::MatchesController < ApplicationController
         home_score: match.home_score,
         away_score: match.away_score,
 
-        prediction: current_user
+        prediction: target_user
           .predictions
           .find_by(match_id: match.id)
           &.slice(:id, :home_score, :away_score, :points_awarded)
@@ -46,13 +38,13 @@ class Api::MatchesController < ApplicationController
 
   def serialize_team(team)
     {
-      id:           team.id,
-      name:         team.name,
-      name_en:      team.name_en,
-      short_name:   team.short_name,
+      id:            team.id,
+      name:          team.name,
+      name_en:       team.name_en,
+      short_name:    team.short_name,
       short_name_en: team.short_name_en,
-      code:         team.code,
-      flag:         team.flag
+      code:          team.code,
+      flag:          team.flag
     }
   end
 end

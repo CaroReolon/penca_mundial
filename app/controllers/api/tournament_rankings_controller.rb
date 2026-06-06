@@ -3,39 +3,48 @@ class Api::TournamentRankingsController < ApplicationController
     tournament = Tournament.find(params[:tournament_id])
 
     ranking = tournament.tournament_rankings
-      .includes(:user)
+      .includes(user: { avatar_attachment: :blob })
       .find_by(user_id: params[:id])
 
     render json: {
       user: {
-        id: ranking.user.id,
-        name: ranking.user.name,
-        email: ranking.user.email
+        id:         ranking.user.id,
+        name:       ranking.user.name,
+        email:      ranking.user.email,
+        avatar_url: avatar_url_for(ranking.user)
       },
-      points: ranking.points,
-      position: ranking.position,
+      points:            ranking.points,
+      position:          ranking.position,
       previous_position: ranking.previous_position
     }
   end
 
-  def index 
+  def index
     tournament = Tournament.find(params[:tournament_id])
 
     rankings = tournament.tournament_rankings
-      .includes(:user)
+      .includes(user: { avatar_attachment: :blob })
       .order(:position)
 
     render json: rankings.map { |ranking|
       {
         user: {
-          id: ranking.user.id,
-          name: ranking.user.first_name + " " + ranking.user.last_name,
-          email: ranking.user.email
+          id:         ranking.user.id,
+          name:       "#{ranking.user.first_name} #{ranking.user.last_name}",
+          email:      ranking.user.email,
+          avatar_url: avatar_url_for(ranking.user)
         },
-        points: ranking.points,
-        position: ranking.position,
+        points:            ranking.points,
+        position:          ranking.position,
         previous_position: ranking.previous_position
       }
     }
+  end
+
+  private
+
+  def avatar_url_for(user)
+    return nil unless user.avatar.attached?
+    rails_blob_url(user.avatar, host: request.base_url)
   end
 end

@@ -6,28 +6,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMatches } from '@/services/matches';
 import { getTornamentsRanking } from '@/services/tournamentService';
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Dashboard() {
   const [matches, setMatches] = useState([]);
   const [pastMatches, setPastMatches] = useState([]);
   const [ranking, setRanking] = useState([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     getMatches('upcoming').then(setMatches);
-    getMatches('past').then(setPastMatches);
+    getMatches('past').then((data) =>
+      setPastMatches(data.filter((m: any) => m.prediction !== null))
+    );
     getTornamentsRanking(1).then(setRanking);
   }, []);
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="min-h-screen">
+      <div className="min-h-screen mx-auto max-w-7xl bg-white px-6 py-6">
       <header className="mb-8 flex items-center justify-between border-b pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            🏆 Penca Mundial 2026
+          <h1 className="text-3xl font-bold tracking-tight text-black">
+            {t('dashboard.title')}
           </h1>
 
           <p className="hidden text-sm text-muted-foreground sm:block">
-            Pronostica los partidos, suma puntos y domina la tabla.
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -36,11 +41,11 @@ export default function Dashboard() {
 
       <Tabs defaultValue="partidos">
         <TabsList className="grid w-full max-w-[500px] grid-cols-3">
-          <TabsTrigger value="partidos">Próximos</TabsTrigger>
+          <TabsTrigger value="partidos">{t('dashboard.tab.upcoming')}</TabsTrigger>
 
-          <TabsTrigger value="historial">Mis Resultados</TabsTrigger>
+          <TabsTrigger value="historial">{t('dashboard.tab.results')}</TabsTrigger>
 
-          <TabsTrigger value="ranking">Ranking</TabsTrigger>
+          <TabsTrigger value="ranking">{t('dashboard.tab.ranking')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="partidos">
@@ -55,6 +60,7 @@ export default function Dashboard() {
           <RankingTab ranking={ranking} />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ class Prediction < ApplicationRecord
     greater_than_or_equal_to: 0
   }
 
-  # validate :match_has_not_started, if: :prediction_changed?
+  validate :match_has_not_started, if: :prediction_changed?
 
   after_create :ensure_ranking
   
@@ -44,11 +44,12 @@ class Prediction < ApplicationRecord
   def ensure_ranking
     TournamentRanking.find_or_create_by!(
       tournament: match.tournament,
-      user: user,
-      points: 0,
-      position: match.tournament.tournament_rankings.count + 1,
-      previous_position: match.tournament.tournament_rankings.count + 1
-    )
+      user: user
+    ) do |ranking|
+      ranking.points = 0
+      ranking.position = nil
+      ranking.previous_position = nil
+    end
   end
 
 end

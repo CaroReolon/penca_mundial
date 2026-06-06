@@ -58,7 +58,7 @@
 
   --muted: oklch(0.97 0 0);
 
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.38 0 0);
 
   --accent-foreground: oklch(0.205 0 0);
 
@@ -99,7 +99,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
-    --text-h: #f3f4f6;
+    --text-h: #08060d;
     --bg: #16171d;
     --border: #2e303a;
     --code-bg: #1f2028;
@@ -117,11 +117,12 @@
 }
 
 #root {
+  position: relative;
+  z-index: 1;
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -130,6 +131,9 @@
 
 body {
   margin: 0;
+  background: linear-gradient(160deg, #15803d 0%, #166534 50%, #14532d 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 h1,

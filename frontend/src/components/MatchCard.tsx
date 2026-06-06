@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 
 import type { Match } from '@/types/match';
 import { predictionService } from '@/services/predictionService';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { teamName, teamShortName, stadiumName, formatKickoff } from '@/lib/localize';
 
 type Props = {
   match: Match;
@@ -12,16 +14,15 @@ type Props = {
 
 export function MatchCard({ match }: Props) {
   const [saving, setSaving] = useState(false);
-
   const [prediction, setPrediction] = useState(match.prediction ?? null);
-
   const [homeScore, setHomeScore] = useState<number | null>(
     match.prediction?.home_score ?? null
   );
-
   const [awayScore, setAwayScore] = useState<number | null>(
     match.prediction?.away_score ?? null
   );
+
+  const { language, t } = useLanguage();
 
   const hasChanges =
     homeScore !== prediction?.home_score ||
@@ -59,33 +60,35 @@ export function MatchCard({ match }: Props) {
     }
   };
 
-  const formattedDate = new Date(match.kickoff_at).toLocaleString('es-UY', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const formattedDate = formatKickoff(match.kickoff_at, language);
+
+  const homeShort = teamShortName(match.home_team, language);
+  const awayShort = teamShortName(match.away_team, language);
+  const stadium   = stadiumName(match, language);
 
   return (
     <Card className="flex flex-col justify-between overflow-hidden p-5 transition-all hover:shadow-md">
       <div>
         <div className="mb-6 flex items-center justify-between border-b pb-2 text-xs font-medium text-muted-foreground">
           <span className="rounded-md bg-muted px-2 py-0.5">
-            Grupo {match.group}
+            {t('match.group')} {match.group}
           </span>
 
           <span className="capitalize">{formattedDate}</span>
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          {/* Equipo local */}
-          <div className="flex flex-col items-center gap-2 text-center">
+          {/* Home team */}
+          <div className="flex min-w-0 flex-col items-center gap-2 text-center">
             <div className="select-none text-4xl transition-transform hover:scale-110">
               {match.home_team.flag}
             </div>
 
-            <div className="max-w-[100px] truncate text-sm font-semibold tracking-tight sm:max-w-none">
-              {match.home_team.name}
+            <div
+              className="w-full text-center text-sm font-semibold leading-tight tracking-tight"
+              title={teamName(match.home_team, language)}
+            >
+              {homeShort}
             </div>
 
             <div className="mt-1 flex items-center gap-1">
@@ -115,7 +118,7 @@ export function MatchCard({ match }: Props) {
             </div>
           </div>
 
-          {/* Marcador */}
+          {/* Score */}
           <div className="flex items-center justify-center gap-2 px-2">
             <span className="w-8 text-center text-3xl font-black tabular-nums tracking-tighter">
               {homeScore ?? '-'}
@@ -130,14 +133,17 @@ export function MatchCard({ match }: Props) {
             </span>
           </div>
 
-          {/* Equipo visitante */}
-          <div className="flex flex-col items-center gap-2 text-center">
+          {/* Away team */}
+          <div className="flex min-w-0 flex-col items-center gap-2 text-center">
             <div className="select-none text-4xl transition-transform hover:scale-110">
               {match.away_team.flag}
             </div>
 
-            <div className="max-w-[100px] truncate text-sm font-semibold tracking-tight sm:max-w-none">
-              {match.away_team.name}
+            <div
+              className="w-full text-center text-sm font-semibold leading-tight tracking-tight"
+              title={teamName(match.away_team, language)}
+            >
+              {awayShort}
             </div>
 
             <div className="mt-1 flex items-center gap-1">
@@ -170,14 +176,13 @@ export function MatchCard({ match }: Props) {
 
         <div className="mt-5 flex items-center justify-center gap-1 text-[11px] text-muted-foreground/80">
           <span>📍</span>
-
-          <span className="max-w-[200px] truncate">{match.stadium}</span>
+          <span className="max-w-[200px] truncate">{stadium}</span>
         </div>
       </div>
 
       {prediction && !hasChanges && (
         <div className="mt-4 text-center text-sm font-medium text-green-600">
-          ✓ Predicción guardada
+          {t('match.saved')}
         </div>
       )}
 
@@ -187,10 +192,10 @@ export function MatchCard({ match }: Props) {
         disabled={saving || !canSave}
       >
         {saving
-          ? 'Guardando...'
+          ? t('match.saving')
           : prediction
-          ? 'Actualizar predicción'
-          : 'Guardar predicción'}
+          ? t('match.update')
+          : t('match.save')}
       </Button>
     </Card>
   );

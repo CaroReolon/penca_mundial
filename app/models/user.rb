@@ -11,4 +11,5 @@ class User < ApplicationRecord
   validates :last_name, presence: true
 
   has_many :predictions, dependent: :destroy
+  has_one_attached :avatar
 end
