@@ -3,7 +3,8 @@ users = [
     first_name: "Joe",
     last_name: "Doe",
     email: "joe.doe@example.com",
-    password: "Hola_123"
+    password: "Hola_123",
+    admin: "true"
   }
 ]
 

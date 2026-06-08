@@ -4,6 +4,9 @@ Rails.application.routes.draw do
     path_names: {
       sign_in: 'login',
       sign_out: 'logout'
+    },
+    controllers: {
+      registrations: 'users/registrations'
     }
   
   namespace :api do
@@ -19,6 +22,16 @@ Rails.application.routes.draw do
     resources :predictions, only: [:index, :create, :update]
 
     get 'users/:user_id/matches', to: 'user_matches#index'
+
+    resources :play_groups, only: [:index, :create, :show, :destroy] do
+      resources :invitations, only: [:create, :destroy],
+                              controller: 'play_group_invitations'
+      delete 'leave',              to: 'invitations#leave',             on: :member
+      delete 'members/:user_id',   to: 'play_group_memberships#destroy', on: :member
+    end
+
+    get  'invitations/:token',       to: 'invitations#show'
+    post 'invitations/:token/accept', to: 'invitations#accept'
 
     namespace :admin do
       resources :matches, only: [:index, :create, :update]

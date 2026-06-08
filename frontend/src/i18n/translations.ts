@@ -49,6 +49,19 @@ const translations = {
 
     // MatchHistory
     'history.empty': '😶 Todavía no hay resultados registrados. ¡Los partidos aparecerán aquí una vez que finalicen!',
+    'history.scoring.title': '¿Cómo se calculan los puntos?',
+    'history.scoring.exact.pts': '5 puntos',
+    'history.scoring.exact.label': 'Resultado exacto',
+    'history.scoring.exact.desc': 'Acertaste el marcador exacto del partido (ej: pronosticaste 2-1 y terminó 2-1).',
+    'history.scoring.diff.pts': '3 puntos',
+    'history.scoring.diff.label': 'Diferencia de goles correcta',
+    'history.scoring.diff.desc': 'Acertaste quién ganó y por cuántos goles, pero no el marcador exacto (ej: pronosticaste 2-0 y terminó 3-1).',
+    'history.scoring.winner.pts': '1 punto',
+    'history.scoring.winner.label': 'Ganador correcto',
+    'history.scoring.winner.desc': 'Solo acertaste el equipo ganador o el empate, sin coincidir en diferencia ni marcador exacto.',
+    'history.scoring.zero.pts': '0 puntos',
+    'history.scoring.zero.label': 'Sin acierto',
+    'history.scoring.zero.desc': 'El resultado fue diferente a tu pronóstico.',
 
     // Ranking
     'ranking.empty': '🏆 ¡Aún no hay participantes en este ranking! Sé el primero en sumar puntos.',
@@ -116,6 +129,19 @@ const translations = {
 
     // MatchHistory
     'history.empty': '😶 No results yet. Matches will appear here once they\'re finished!',
+    'history.scoring.title': 'How are points calculated?',
+    'history.scoring.exact.pts': '5 points',
+    'history.scoring.exact.label': 'Exact result',
+    'history.scoring.exact.desc': 'You predicted the exact final score (e.g. you said 2-1 and it ended 2-1).',
+    'history.scoring.diff.pts': '3 points',
+    'history.scoring.diff.label': 'Correct goal difference',
+    'history.scoring.diff.desc': 'You got the winner and the margin right, but not the exact score (e.g. you said 2-0 and it ended 3-1).',
+    'history.scoring.winner.pts': '1 point',
+    'history.scoring.winner.label': 'Correct winner',
+    'history.scoring.winner.desc': 'You only got the winner (or draw) right, without matching the goal difference or exact score.',
+    'history.scoring.zero.pts': '0 points',
+    'history.scoring.zero.label': 'No match',
+    'history.scoring.zero.desc': 'The result was different from your prediction.',
 
     // Ranking
     'ranking.empty': '🏆 No participants in this ranking yet! Be the first to earn points.',

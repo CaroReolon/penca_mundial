@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import UserProfile from './pages/UserProfile';
 import AdminPanel from './pages/AdminPanel';
+import InvitePage from './pages/InvitePage';
+import Register from './pages/Register';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 function App() {
@@ -11,6 +13,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/invite/:token" element={<InvitePage />} />
 
         <Route
           path="/dashboard"

@@ -4,6 +4,10 @@ class Api::UserMatchesController < ApplicationController
   def index
     target_user = User.find(params[:user_id])
 
+    unless current_user.can_view_profile_of?(target_user)
+      return render json: { error: 'No tenés acceso al perfil de este usuario.' }, status: :forbidden
+    end
+
     matches = Match
       .includes(:group, :home_team, :away_team)
       .where("kickoff_at <= ?", Time.current)

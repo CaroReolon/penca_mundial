@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { acceptInvitation } from '@/services/playGroupService';
 
 interface LoginData {
   email: string;
@@ -37,6 +38,14 @@ export default function Login() {
       const token = response.headers.authorization;
       if (token) {
         await login(token);
+
+        // Accept pending group invite if the user came from an invite link
+        const pendingToken = sessionStorage.getItem('pendingInviteToken');
+        if (pendingToken) {
+          sessionStorage.removeItem('pendingInviteToken');
+          try { await acceptInvitation(pendingToken); } catch { /* ignore */ }
+        }
+
         navigate('/dashboard');
       }
     } catch (error) {
@@ -156,6 +165,14 @@ export default function Login() {
               </button>
             </form>
           </div>
+
+          {/* Register link */}
+          <p className="mt-5 text-center text-sm text-gray-400">
+            {language === 'es' ? '¿No tenés cuenta?' : "Don't have an account?"}{' '}
+            <Link to="/register" className="text-green-600 font-medium hover:underline">
+              {language === 'es' ? 'Registrate' : 'Sign up'}
+            </Link>
+          </p>
         </div>
       </div>
     </div>
