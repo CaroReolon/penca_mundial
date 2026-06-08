@@ -7,6 +7,7 @@ class Api::MeController < ApplicationController
       first_name: current_user.first_name,
       last_name:  current_user.last_name,
       email:      current_user.email,
+      admin:      current_user.admin?,
       avatar_url: avatar_url_for(current_user)
     }
   end
