@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { SideBarProfile } from '@/components/SideBarProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,13 +18,13 @@ import {
 } from '@/services/adminService';
 
 const STAGE_LABELS: Record<string, string> = {
-  group_stage:   'Fase de Grupos',
-  round_of_32:   'Ronda de 32',
-  round_of_16:   'Octavos de Final',
+  group_stage: 'Fase de Grupos',
+  round_of_32: 'Ronda de 32',
+  round_of_16: 'Octavos de Final',
   quarter_final: 'Cuartos de Final',
-  semi_final:    'Semifinal',
-  third_place:   'Tercer Puesto',
-  final:         'Final',
+  semi_final: 'Semifinal',
+  third_place: 'Tercer Puesto',
+  final: 'Final',
 };
 
 const KNOCKOUT_STAGES = [
@@ -79,8 +78,12 @@ function ResultRow({
 }) {
   const [home, setHome] = useState(String(match.home_score ?? ''));
   const [away, setAway] = useState(String(match.away_score ?? ''));
-  const [homeTeamId, setHomeTeamId] = useState(String(match.home_team?.id ?? ''));
-  const [awayTeamId, setAwayTeamId] = useState(String(match.away_team?.id ?? ''));
+  const [homeTeamId, setHomeTeamId] = useState(
+    String(match.home_team?.id ?? '')
+  );
+  const [awayTeamId, setAwayTeamId] = useState(
+    String(match.away_team?.id ?? '')
+  );
   const [completed, setCompleted] = useState(match.completed);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -105,7 +108,10 @@ function ResultRow({
   };
 
   const kickoff = new Date(match.kickoff_at).toLocaleString('es-UY', {
-    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
   const isKnockout = match.stage !== 'group_stage';
@@ -115,43 +121,76 @@ function ResultRow({
       <div className="space-y-2">
         {/* Stage + date */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant={match.completed ? 'default' : 'secondary'} className="text-xs">
+          <Badge
+            variant={match.completed ? 'default' : 'secondary'}
+            className="text-xs"
+          >
             {STAGE_LABELS[match.stage] ?? match.stage}
             {match.group ? ` · Grupo ${match.group}` : ''}
           </Badge>
           <span className="text-xs text-gray-400">{kickoff}</span>
-          {match.stadium && <span className="text-xs text-gray-400">📍 {match.stadium}</span>}
+          {match.stadium && (
+            <span className="text-xs text-gray-400">📍 {match.stadium}</span>
+          )}
         </div>
 
         {/* Teams — editable only for knockout (TBD teams) */}
         {isKnockout ? (
           <div className="grid grid-cols-2 gap-2">
-            <TeamSelect label="Local" teams={teams} value={homeTeamId}
-              onChange={(v) => { setHomeTeamId(v); mark(); }} />
-            <TeamSelect label="Visitante" teams={teams} value={awayTeamId}
-              onChange={(v) => { setAwayTeamId(v); mark(); }} />
+            <TeamSelect
+              label="Local"
+              teams={teams}
+              value={homeTeamId}
+              onChange={(v) => {
+                setHomeTeamId(v);
+                mark();
+              }}
+            />
+            <TeamSelect
+              label="Visitante"
+              teams={teams}
+              value={awayTeamId}
+              onChange={(v) => {
+                setAwayTeamId(v);
+                mark();
+              }}
+            />
           </div>
         ) : (
           <div className="flex items-center gap-2 text-sm font-medium">
-            <span>{match.home_team?.flag} {match.home_team?.name}</span>
+            <span>
+              {match.home_team?.flag} {match.home_team?.name}
+            </span>
             <span className="text-gray-400">vs</span>
-            <span>{match.away_team?.flag} {match.away_team?.name}</span>
+            <span>
+              {match.away_team?.flag} {match.away_team?.name}
+            </span>
           </div>
         )}
 
         {/* Score */}
         <div className="flex items-center gap-2">
           <Input
-            type="number" min="0" placeholder="–"
+            type="number"
+            min="0"
+            placeholder="–"
             value={home}
-            onChange={(e) => { setHome(e.target.value); mark(); }}
+            onChange={(e) => {
+              setHome(e.target.value);
+              mark();
+            }}
             className="w-16 h-8 text-center text-sm"
           />
           <span className="text-gray-400 font-bold">:</span>
           <Input
-            type="number" min="0" placeholder="–"
+            type="number"
+            min="0"
+            placeholder="–"
             value={away}
-            onChange={(e) => { setAway(e.target.value); mark(); }}
+            onChange={(e) => {
+              setAway(e.target.value);
+              mark();
+            }}
             className="w-16 h-8 text-center text-sm"
           />
           <label className="flex items-center gap-1.5 text-sm text-gray-600 ml-2 cursor-pointer">
@@ -159,7 +198,10 @@ function ResultRow({
               type="checkbox"
               className="accent-green-600"
               checked={completed}
-              onChange={(e) => { setCompleted(e.target.checked); mark(); }}
+              onChange={(e) => {
+                setCompleted(e.target.checked);
+                mark();
+              }}
             />
             Finalizado
           </label>
@@ -197,7 +239,10 @@ function NewMatchForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!kickoff) { setError('La fecha es obligatoria'); return; }
+    if (!kickoff) {
+      setError('La fecha es obligatoria');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -210,8 +255,11 @@ function NewMatchForm({
         stadium_en: stadiumEn,
       });
       onCreated(m);
-      setHomeTeamId(''); setAwayTeamId(''); setKickoff('');
-      setStadium(''); setStadiumEn('');
+      setHomeTeamId('');
+      setAwayTeamId('');
+      setKickoff('');
+      setStadium('');
+      setStadiumEn('');
     } catch (err: any) {
       setError(err?.response?.data?.errors?.join(', ') ?? 'Error al guardar');
     } finally {
@@ -229,16 +277,26 @@ function NewMatchForm({
           onChange={(e) => setStage(e.target.value)}
         >
           {KNOCKOUT_STAGES.map((s) => (
-            <option key={s} value={s}>{STAGE_LABELS[s]}</option>
+            <option key={s} value={s}>
+              {STAGE_LABELS[s]}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <TeamSelect label="Equipo Local (puede dejarse vacío)" teams={teams}
-          value={homeTeamId} onChange={setHomeTeamId} />
-        <TeamSelect label="Equipo Visitante (puede dejarse vacío)" teams={teams}
-          value={awayTeamId} onChange={setAwayTeamId} />
+        <TeamSelect
+          label="Equipo Local (puede dejarse vacío)"
+          teams={teams}
+          value={homeTeamId}
+          onChange={setHomeTeamId}
+        />
+        <TeamSelect
+          label="Equipo Visitante (puede dejarse vacío)"
+          teams={teams}
+          value={awayTeamId}
+          onChange={setAwayTeamId}
+        />
       </div>
 
       <div className="space-y-1">
@@ -255,13 +313,21 @@ function NewMatchForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-xs text-gray-500">Estadio (ES)</Label>
-          <Input value={stadium} onChange={(e) => setStadium(e.target.value)}
-            placeholder="Estadio Azteca" className="h-9" />
+          <Input
+            value={stadium}
+            onChange={(e) => setStadium(e.target.value)}
+            placeholder="Estadio Azteca"
+            className="h-9"
+          />
         </div>
         <div className="space-y-1">
           <Label className="text-xs text-gray-500">Estadio (EN)</Label>
-          <Input value={stadiumEn} onChange={(e) => setStadiumEn(e.target.value)}
-            placeholder="Azteca Stadium" className="h-9" />
+          <Input
+            value={stadiumEn}
+            onChange={(e) => setStadiumEn(e.target.value)}
+            placeholder="Azteca Stadium"
+            className="h-9"
+          />
         </div>
       </div>
 
@@ -271,8 +337,11 @@ function NewMatchForm({
         </p>
       )}
 
-      <Button type="submit" disabled={saving}
-        className="w-full bg-green-600 hover:bg-green-700 text-white">
+      <Button
+        type="submit"
+        disabled={saving}
+        className="w-full bg-green-600 hover:bg-green-700 text-white"
+      >
         {saving ? 'Guardando...' : '+ Agregar partido'}
       </Button>
     </form>
@@ -282,7 +351,6 @@ function NewMatchForm({
 // ── Main page ─────────────────────────────────────────────────────
 export default function AdminPanel() {
   const { user } = useAuth();
-  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const [matches, setMatches] = useState<AdminMatch[]>([]);
@@ -290,9 +358,15 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.admin) { navigate('/dashboard'); return; }
+    if (!user?.admin) {
+      navigate('/dashboard');
+      return;
+    }
     Promise.all([adminGetMatches(), adminGetTeams()])
-      .then(([m, t]) => { setMatches(m); setTeams(t); })
+      .then(([m, t]) => {
+        setMatches(m);
+        setTeams(t);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -300,13 +374,16 @@ export default function AdminPanel() {
     setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
 
   const handleCreated = (created: AdminMatch) =>
-    setMatches((prev) => [...prev, created].sort(
-      (a, b) => new Date(a.kickoff_at).getTime() - new Date(b.kickoff_at).getTime()
-    ));
+    setMatches((prev) =>
+      [...prev, created].sort(
+        (a, b) =>
+          new Date(a.kickoff_at).getTime() - new Date(b.kickoff_at).getTime()
+      )
+    );
 
   const upcoming = matches.filter((m) => !m.completed);
   const completed = matches.filter((m) => m.completed);
-  const knockout  = matches.filter((m) => m.stage !== 'group_stage');
+  const knockout = matches.filter((m) => m.stage !== 'group_stage');
 
   return (
     <div className="min-h-screen">
@@ -321,8 +398,12 @@ export default function AdminPanel() {
                 ← Dashboard
               </button>
             </div>
-            <h1 className="text-2xl font-black text-gray-900">⚙️ Panel de Administración</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Gestión de partidos y resultados</p>
+            <h1 className="text-2xl font-black text-gray-900">
+              ⚙️ Panel de Administración
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Gestión de partidos y resultados
+            </p>
           </div>
           <SideBarProfile />
         </header>
@@ -349,10 +430,17 @@ export default function AdminPanel() {
                 </CardHeader>
                 <CardContent>
                   {upcoming.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-6 text-center">No hay partidos pendientes.</p>
+                    <p className="text-sm text-gray-400 py-6 text-center">
+                      No hay partidos pendientes.
+                    </p>
                   ) : (
                     upcoming.map((m) => (
-                      <ResultRow key={m.id} match={m} teams={teams} onSaved={handleSaved} />
+                      <ResultRow
+                        key={m.id}
+                        match={m}
+                        teams={teams}
+                        onSaved={handleSaved}
+                      />
                     ))
                   )}
                 </CardContent>
@@ -369,10 +457,17 @@ export default function AdminPanel() {
                 </CardHeader>
                 <CardContent>
                   {completed.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-6 text-center">Aún no hay partidos finalizados.</p>
+                    <p className="text-sm text-gray-400 py-6 text-center">
+                      Aún no hay partidos finalizados.
+                    </p>
                   ) : (
                     completed.map((m) => (
-                      <ResultRow key={m.id} match={m} teams={teams} onSaved={handleSaved} />
+                      <ResultRow
+                        key={m.id}
+                        match={m}
+                        teams={teams}
+                        onSaved={handleSaved}
+                      />
                     ))
                   )}
                 </CardContent>
@@ -396,12 +491,21 @@ export default function AdminPanel() {
                         Partidos de fase final creados
                       </p>
                       {knockout.map((m) => (
-                        <div key={m.id} className="flex items-center gap-2 py-1.5 border-b last:border-0 text-sm">
-                          <Badge variant="outline" className="text-xs">{STAGE_LABELS[m.stage]}</Badge>
+                        <div
+                          key={m.id}
+                          className="flex items-center gap-2 py-1.5 border-b last:border-0 text-sm"
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            {STAGE_LABELS[m.stage]}
+                          </Badge>
                           <span>
-                            {m.home_team ? `${m.home_team.flag} ${m.home_team.name}` : 'TBD'}
+                            {m.home_team
+                              ? `${m.home_team.flag} ${m.home_team.name}`
+                              : 'TBD'}
                             {' vs '}
-                            {m.away_team ? `${m.away_team.flag} ${m.away_team.name}` : 'TBD'}
+                            {m.away_team
+                              ? `${m.away_team.flag} ${m.away_team.name}`
+                              : 'TBD'}
                           </span>
                           {m.completed && (
                             <span className="ml-auto text-gray-400 text-xs">

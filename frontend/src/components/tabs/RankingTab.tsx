@@ -223,7 +223,7 @@ function CreateGroupModal({ onCreated, onClose }: { onCreated: (g: PlayGroup) =>
 }
 
 // ─── Main component ───────────────────────────────────────────────
-export function RankingTab({ ranking: initialRanking }: Props) {
+export function RankingTab({ ranking: _initialRanking }: Props) {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user: me } = useAuth();

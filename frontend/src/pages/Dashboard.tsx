@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Dashboard() {
-  const [matches, setMatches] = useState([]);
-  const [pastMatches, setPastMatches] = useState([]);
-  const [ranking, setRanking] = useState([]);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [pastMatches, setPastMatches] = useState<any[]>([]);
+  const [ranking, setRanking] = useState<any[]>([]);
   const { t } = useLanguage();
 
   useEffect(() => {

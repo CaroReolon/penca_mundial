@@ -37,7 +37,7 @@ export default function InvitePage() {
 
     setAccepting(true);
     try {
-      const res = await acceptInvitation(token!);
+      await acceptInvitation(token!);
       setDone(true);
       setTimeout(() => navigate('/dashboard', { state: { openRanking: true } }), 2000);
     } catch (err: any) {

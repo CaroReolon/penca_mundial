@@ -1,4 +1,4 @@
-import type { Language } from '@/contexts/LanguageContext';
+import type { Language } from '@/i18n/translations';
 import type { Team } from '@/types/match';
 
 /** Full display name for a team (e.g. headings, tables). */
