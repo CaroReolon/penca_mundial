@@ -1,6 +1,7 @@
 const translations = {
   es: {
     // Login
+    'login.title': 'Iniciar sesión',
     'login.password': 'Contraseña',
     'login.error': 'Email o contraseña incorrectos',
     'login.loading': 'Ingresando...',
@@ -67,6 +68,7 @@ const translations = {
 
   en: {
     // Login
+    'login.title': 'Sign in',
     'login.password': 'Password',
     'login.error': 'Incorrect email or password',
     'login.loading': 'Signing in...',

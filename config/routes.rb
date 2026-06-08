@@ -19,6 +19,11 @@ Rails.application.routes.draw do
     resources :predictions, only: [:index, :create, :update]
 
     get 'users/:user_id/matches', to: 'user_matches#index'
+
+    namespace :admin do
+      resources :matches, only: [:index, :create, :update]
+      resources :teams,   only: [:index]
+    end
   end
 
   get "up" => "rails/health#show", as: :rails_health_check

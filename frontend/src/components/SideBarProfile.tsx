@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { uploadAvatar, deleteAvatar } from '@/services/userService';
 export function SideBarProfile() {
   const { logout, user, refreshUser } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -109,6 +111,18 @@ export function SideBarProfile() {
             >
               {t('sidebar.removePhoto')}
             </DropdownMenuItem>
+          )}
+
+          {user?.admin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-amber-600 focus:bg-amber-50 focus:text-amber-700"
+                onClick={() => navigate('/admin')}
+              >
+                ⚙️ Panel de Admin
+              </DropdownMenuItem>
+            </>
           )}
 
           <DropdownMenuSeparator />
