@@ -33,7 +33,7 @@ export default function Register() {
     setLoading(true);
     setError('');
     try {
-      const response = await api.post('/', {
+      const response = await api.post('/register', {
         user: {
           first_name: data.first_name,
           last_name: data.last_name,

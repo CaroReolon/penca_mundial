@@ -79,6 +79,5 @@ test:
 #
 production:
   <<: *default
-  database: penca_mundial_production
-  username: penca_mundial
-  password: <%= ENV["PENCA_MUNDIAL_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
