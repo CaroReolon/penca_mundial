@@ -26,6 +26,12 @@ class Api::TournamentRankingsController < ApplicationController
       .includes(user: { avatar_attachment: :blob })
       .order(:position)
 
+    if params[:play_group_id].present?
+      group = PlayGroup.find(params[:play_group_id])
+      member_ids = group.memberships.pluck(:user_id)
+      rankings = rankings.where(user_id: member_ids)
+    end
+
     render json: rankings.map { |ranking|
       {
         user: {

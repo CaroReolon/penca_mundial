@@ -27,6 +27,27 @@ type Props = {
   predictionLabel?: string;
 };
 
+const getPredictionBg = (pts: number) => {
+  if (pts >= 5) return 'bg-green-100';
+  if (pts >= 3) return 'bg-blue-100';
+  if (pts >= 1) return 'bg-yellow-100';
+  return 'bg-muted/40';
+};
+
+const getPredictionMuted = (pts: number) => {
+  if (pts >= 5) return 'text-green-700';
+  if (pts >= 3) return 'text-blue-700';
+  if (pts >= 1) return 'text-yellow-700';
+  return 'text-muted-foreground';
+};
+
+const getPredictionScore = (pts: number) => {
+  if (pts >= 5) return 'border-green-300 bg-green-50 text-green-900';
+  if (pts >= 3) return 'border-blue-300 bg-blue-50 text-blue-900';
+  if (pts >= 1) return 'border-yellow-300 bg-yellow-50 text-yellow-900';
+  return 'border bg-background text-foreground';
+};
+
 export function PastMatchCard({ match, predictionLabel }: Props) {
   const { language, t } = useLanguage();
 
@@ -40,11 +61,10 @@ export function PastMatchCard({ match, predictionLabel }: Props) {
   const formattedDate = formatKickoff(match.kickoff_at, language);
 
   const getBadgeColor = (pts: number) => {
-    if (pts >= 3)
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-300';
-    if (pts > 0)
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-300';
-    return 'bg-muted text-muted-foreground';
+    if (pts >= 5) return 'bg-green-100 text-green-800 border-green-300';
+    if (pts >= 3) return 'bg-blue-100 text-blue-800 border-blue-300';
+    if (pts >= 1) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    return 'bg-muted text-muted-foreground border-transparent';
   };
 
   return (
@@ -96,13 +116,13 @@ export function PastMatchCard({ match, predictionLabel }: Props) {
       </div>
 
       {/* USER PREDICTION */}
-      <div className="mt-5 rounded-lg bg-muted/40 p-2 text-center text-xs">
-        <span className="text-muted-foreground block mb-1">{label}</span>
+      <div className={`mt-5 rounded-lg p-2 text-center text-xs ${getPredictionBg(points)}`}>
+        <span className={`block mb-1 ${getPredictionMuted(points)}`}>{label}</span>
         <div className="flex items-center justify-center gap-2 font-semibold text-sm">
           <span className="min-w-0 truncate" title={teamName(match.home_team, language)}>
             {homeShort}
           </span>
-          <span className="flex-shrink-0 rounded border bg-background px-2 py-0.5 text-foreground">
+          <span className={`flex-shrink-0 rounded border px-2 py-0.5 ${getPredictionScore(points)}`}>
             {match.prediction.home_score} - {match.prediction.away_score}
           </span>
           <span className="min-w-0 truncate" title={teamName(match.away_team, language)}>
