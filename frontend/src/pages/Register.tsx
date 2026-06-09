@@ -26,7 +26,7 @@ export default function Register() {
 
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterData>();
 
   const onSubmit = async (data: RegisterData) => {
@@ -62,15 +62,11 @@ export default function Register() {
       }
     } catch (err: any) {
       const messages = err?.response?.data?.errors?.full_messages;
-      setError(
-        Array.isArray(messages) ? messages.join(', ') : (language === 'es' ? 'Error al crear la cuenta.' : 'Error creating account.')
-      );
+      setError(Array.isArray(messages) ? messages.join(', ') : t('register.error'));
     } finally {
       setLoading(false);
     }
   };
-
-  const isEs = language === 'es';
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -104,7 +100,7 @@ export default function Register() {
 
           <div className="p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6">
-              {isEs ? 'Crear cuenta' : 'Create account'}
+              {t('register.title')}
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -113,28 +109,28 @@ export default function Register() {
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1.5">
                   <Label className="text-gray-700 text-sm font-medium">
-                    {isEs ? 'Nombre' : 'First name'}
+                    {t('register.firstName')}
                   </Label>
                   <Input
-                    placeholder={isEs ? 'Juan' : 'John'}
-                    className="h-11 border-gray-200 focus-visible:ring-green-500"
+                    placeholder={t('register.firstNamePlaceholder')}
+                    className="h-11 border-gray-200 focus-visible:ring-green-500 placeholder:text-gray-300"
                     {...register('first_name', { required: true })}
                   />
                   {errors.first_name && (
-                    <p className="text-xs text-red-500">{isEs ? 'Requerido' : 'Required'}</p>
+                    <p className="text-xs text-red-500">{t('register.required')}</p>
                   )}
                 </div>
                 <div className="flex-1 space-y-1.5">
                   <Label className="text-gray-700 text-sm font-medium">
-                    {isEs ? 'Apellido' : 'Last name'}
+                    {t('register.lastName')}
                   </Label>
                   <Input
-                    placeholder={isEs ? 'García' : 'Doe'}
-                    className="h-11 border-gray-200 focus-visible:ring-green-500"
+                    placeholder={t('register.lastNamePlaceholder')}
+                    className="h-11 border-gray-200 focus-visible:ring-green-500 placeholder:text-gray-300"
                     {...register('last_name', { required: true })}
                   />
                   {errors.last_name && (
-                    <p className="text-xs text-red-500">{isEs ? 'Requerido' : 'Required'}</p>
+                    <p className="text-xs text-red-500">{t('register.required')}</p>
                   )}
                 </div>
               </div>
@@ -144,8 +140,8 @@ export default function Register() {
                 <Label className="text-gray-700 text-sm font-medium">Email</Label>
                 <Input
                   type="email"
-                  placeholder="tu@email.com"
-                  className="h-11 border-gray-200 focus-visible:ring-green-500"
+                  placeholder={t('register.emailPlaceholder')}
+                  className="h-11 border-gray-200 focus-visible:ring-green-500 placeholder:text-gray-300"
                   {...register('email', { required: true })}
                 />
               </div>
@@ -153,13 +149,13 @@ export default function Register() {
               {/* Password */}
               <div className="space-y-1.5">
                 <Label className="text-gray-700 text-sm font-medium">
-                  {isEs ? 'Contraseña' : 'Password'}
+                  {t('register.password')}
                 </Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className="h-11 border-gray-200 focus-visible:ring-green-500 pr-10"
+                    className="h-11 border-gray-200 focus-visible:ring-green-500 pr-10 placeholder:text-gray-300"
                     {...register('password', { required: true, minLength: 6 })}
                   />
                   <button
@@ -171,26 +167,28 @@ export default function Register() {
                   </button>
                 </div>
                 {errors.password?.type === 'minLength' && (
-                  <p className="text-xs text-red-500">{isEs ? 'Mínimo 6 caracteres' : 'At least 6 characters'}</p>
+                  <p className="text-xs text-red-500">{t('register.minLength')}</p>
                 )}
               </div>
 
               {/* Confirm password */}
               <div className="space-y-1.5">
                 <Label className="text-gray-700 text-sm font-medium">
-                  {isEs ? 'Confirmar contraseña' : 'Confirm password'}
+                  {t('register.confirmPassword')}
                 </Label>
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="h-11 border-gray-200 focus-visible:ring-green-500"
+                  className="h-11 border-gray-200 focus-visible:ring-green-500 placeholder:text-gray-300"
                   {...register('password_confirmation', {
                     required: true,
-                    validate: v => v === watch('password') || (isEs ? 'Las contraseñas no coinciden' : 'Passwords do not match'),
+                    validate: v => v === watch('password') || t('register.passwordMismatch'),
                   })}
                 />
                 {errors.password_confirmation && (
-                  <p className="text-xs text-red-500">{errors.password_confirmation.message || (isEs ? 'Requerido' : 'Required')}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.password_confirmation.message || t('register.required')}
+                  </p>
                 )}
               </div>
 
@@ -211,19 +209,19 @@ export default function Register() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
-                    {isEs ? 'Creando cuenta...' : 'Creating account...'}
+                    {t('register.loading')}
                   </span>
                 ) : (
-                  isEs ? 'Crear cuenta' : 'Create account'
+                  t('register.submit')
                 )}
               </button>
             </form>
 
             {/* Login link */}
             <p className="mt-5 text-center text-sm text-gray-400">
-              {isEs ? '¿Ya tenés cuenta?' : 'Already have an account?'}{' '}
+              {t('register.hasAccount')}{' '}
               <Link to="/login" className="text-green-600 font-medium hover:underline">
-                {isEs ? 'Iniciá sesión' : 'Sign in'}
+                {t('register.signIn')}
               </Link>
             </p>
           </div>

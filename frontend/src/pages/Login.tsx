@@ -98,8 +98,8 @@ export default function Login() {
                 </Label>
                 <Input
                   type="email"
-                  placeholder="tu@email.com"
-                  className="h-11 border-gray-200 focus-visible:ring-green-500"
+                  placeholder="john@example.com"
+                  className="h-11 border-gray-200 focus-visible:ring-green-500 placeholder:text-gray-300"
                   {...register('email', { required: true })}
                 />
               </div>
@@ -112,7 +112,7 @@ export default function Login() {
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className="h-11 border-gray-200 focus-visible:ring-green-500 pr-10"
+                    className="h-11 border-gray-200 focus-visible:ring-green-500 pr-10 placeholder:text-gray-300"
                     {...register('password', { required: true })}
                   />
                   <button
@@ -167,10 +167,10 @@ export default function Login() {
           </div>
 
           {/* Register link */}
-          <p className="mt-5 text-center text-sm text-gray-400">
-            {language === 'es' ? '¿No tenés cuenta?' : "Don't have an account?"}{' '}
+          <p className="pb-6 text-center text-sm text-gray-400">
+            {t('login.noAccount')}{' '}
             <Link to="/register" className="text-green-600 font-medium hover:underline">
-              {language === 'es' ? 'Registrate' : 'Sign up'}
+              {t('login.signUp')}
             </Link>
           </p>
         </div>

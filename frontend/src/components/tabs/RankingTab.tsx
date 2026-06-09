@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,9 +17,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTornamentsRanking } from '@/services/tournamentService';
 import {
-  getMyGroups, getGroup, createGroup, leaveGroup, deleteGroup, removeMember,
-  createInviteLink, cancelInvitation,
-  type PlayGroup, type PlayGroupDetail, type PendingInvitation,
+  getMyGroups,
+  getGroup,
+  createGroup,
+  leaveGroup,
+  deleteGroup,
+  removeMember,
+  createInviteLink,
+  cancelInvitation,
+  type PlayGroup,
+  type PlayGroupDetail,
+  type PendingInvitation,
 } from '@/services/playGroupService';
 
 type Participant = {
@@ -24,29 +39,60 @@ type Participant = {
 
 type Props = { ranking: Participant[] };
 
+// Shared initials helper — same rule as SideBarProfile:
+// first letter of first word + first letter of last word (e.g. "John Doe" → "JD")
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
 // ─── Copy link button ─────────────────────────────────────────────
-function CopyButton({ text }: { text: string }) {
+function CopyButton({
+  copyLabel,
+  copiedLabel,
+  text,
+}: {
+  copyLabel: string;
+  copiedLabel: string;
+  text: string;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
       className="text-xs text-green-600 hover:underline ml-1 shrink-0"
     >
-      {copied ? '✓ Copiado' : 'Copiar link'}
+      {copied ? copiedLabel : copyLabel}
     </button>
   );
 }
 
 // ─── Group management panel ───────────────────────────────────────
-function GroupPanel({ group, currentUserId, onClose, onLeft, onDeleted }: {
+function GroupPanel({
+  group,
+  currentUserId,
+  onClose,
+  onLeft,
+  onDeleted,
+}: {
   group: PlayGroupDetail;
   currentUserId: number;
   onClose: () => void;
   onLeft: () => void;
   onDeleted: () => void;
 }) {
+  const { t, language } = useLanguage();
   const [inviting, setInviting] = useState(false);
-  const [invitations, setInvitations] = useState<PendingInvitation[]>(group.pending_invitations);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>(
+    group.pending_invitations
+  );
   const [members, setMembers] = useState(group.members);
   const [leaving, setLeaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -54,83 +100,150 @@ function GroupPanel({ group, currentUserId, onClose, onLeft, onDeleted }: {
   const [error, setError] = useState('');
 
   const handleGenerateLink = async () => {
-    setInviting(true); setError('');
+    setInviting(true);
+    setError('');
     try {
       const inv = await createInviteLink(group.id);
-      setInvitations(prev => [...prev, inv]);
+      setInvitations((prev) => [...prev, inv]);
     } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Error al generar el link');
-    } finally { setInviting(false); }
+      setError(
+        err?.response?.data?.error ??
+          (language === 'es'
+            ? 'Error al generar el link'
+            : 'Error generating link')
+      );
+    } finally {
+      setInviting(false);
+    }
   };
 
   const handleCancelInvite = async (invId: number) => {
     await cancelInvitation(group.id, invId);
-    setInvitations(prev => prev.filter(i => i.id !== invId));
+    setInvitations((prev) => prev.filter((i) => i.id !== invId));
   };
 
   const handleRemoveMember = async (userId: number, name: string) => {
-    if (!confirm(`¿Eliminar a ${name} del grupo?`)) return;
+    const msg =
+      language === 'es'
+        ? `¿Eliminar a ${name} del grupo?`
+        : `Remove ${name} from the group?`;
+    if (!confirm(msg)) return;
     setRemovingId(userId);
     try {
       await removeMember(group.id, userId);
-      setMembers(prev => prev.filter(m => m.id !== userId));
+      setMembers((prev) => prev.filter((m) => m.id !== userId));
     } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Error al eliminar miembro');
-    } finally { setRemovingId(null); }
+      setError(
+        err?.response?.data?.error ??
+          (language === 'es'
+            ? 'Error al eliminar miembro'
+            : 'Error removing member')
+      );
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   const handleLeave = async () => {
-    if (!confirm('¿Seguro que querés salir de este grupo?')) return;
+    const msg =
+      language === 'es'
+        ? '¿Seguro que querés salir de este grupo?'
+        : 'Are you sure you want to leave this group?';
+    if (!confirm(msg)) return;
     setLeaving(true);
-    try { await leaveGroup(group.id); onLeft(); }
-    catch (err: any) { setError(err?.response?.data?.error ?? 'Error'); setLeaving(false); }
+    try {
+      await leaveGroup(group.id);
+      onLeft();
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.error ?? (language === 'es' ? 'Error' : 'Error')
+      );
+      setLeaving(false);
+    }
   };
 
   const handleDelete = async () => {
-    if (!confirm(`¿Eliminar el grupo "${group.name}"? Esta acción no se puede deshacer.`)) return;
+    const msg =
+      language === 'es'
+        ? `¿Eliminar el grupo "${group.name}"? Esta acción no se puede deshacer.`
+        : `Delete the group "${group.name}"? This action cannot be undone.`;
+    if (!confirm(msg)) return;
     setDeleting(true);
-    try { await deleteGroup(group.id); onDeleted(); }
-    catch { setDeleting(false); }
+    try {
+      await deleteGroup(group.id);
+      onDeleted();
+    } catch {
+      setDeleting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
             <h2 className="font-bold text-gray-900">{group.name}</h2>
-            <p className="text-xs text-gray-400">{members.length} miembro{members.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-gray-400">
+              {members.length}{' '}
+              {members.length !== 1
+                ? t('group.memberPlural')
+                : t('group.memberSingular')}
+            </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-lg"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-5 space-y-5">
-
           {/* Members list */}
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Miembros</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+              {t('group.membersTitle')}
+            </p>
             <div className="space-y-2">
-              {members.map(m => {
+              {members.map((m) => {
                 const isSelf = m.id === currentUserId;
                 const canRemove = group.is_admin && !isSelf;
                 return (
                   <div key={m.id} className="flex items-center gap-2">
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarImage src={m.avatar_url ?? undefined} />
-                      <AvatarFallback className="text-xs">{m.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="text-xs">
+                        {getInitials(m.name)}
+                      </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm flex-1 truncate">{m.name}{isSelf && <span className="text-gray-400 ml-1">(vos)</span>}</span>
+                    <span className="text-sm flex-1 truncate">
+                      {m.name}
+                      {isSelf && (
+                        <span className="text-gray-400 ml-1">
+                          {t('group.youLabel')}
+                        </span>
+                      )}
+                    </span>
                     <Badge variant="outline" className="text-[10px] shrink-0">
-                      {m.role === 'admin' ? '👑 Admin' : 'Miembro'}
+                      {m.role === 'admin'
+                        ? t('group.roleAdmin')
+                        : t('group.roleMember')}
                     </Badge>
                     {canRemove && (
                       <button
                         onClick={() => handleRemoveMember(m.id, m.name)}
                         disabled={removingId === m.id}
-                        title="Eliminar del grupo"
+                        title={
+                          language === 'es'
+                            ? 'Eliminar del grupo'
+                            : 'Remove from group'
+                        }
                         className="text-gray-300 hover:text-red-400 transition-colors ml-1 shrink-0 disabled:opacity-40"
                       >
                         {removingId === m.id ? '...' : '✕'}
@@ -145,19 +258,41 @@ function GroupPanel({ group, currentUserId, onClose, onLeft, onDeleted }: {
           {/* Invite links (admin only) */}
           {group.is_admin && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Invitar al grupo</p>
-              <Button size="sm" onClick={handleGenerateLink} disabled={inviting}
-                className="bg-green-600 hover:bg-green-700 text-white h-8 w-full">
-                {inviting ? '...' : '🔗 Generar link de invitación'}
+              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                {t('group.invite.title')}
+              </p>
+              <Button
+                size="sm"
+                onClick={handleGenerateLink}
+                disabled={inviting}
+                className="bg-green-600 hover:bg-green-700 text-white h-8 w-full"
+              >
+                {inviting ? '...' : t('group.invite.generate')}
               </Button>
               {invitations.length > 0 && (
                 <div className="mt-3 space-y-1.5">
-                  <p className="text-[11px] text-gray-400">Compartí el link por WhatsApp, Telegram o como quieras</p>
-                  {invitations.map(inv => (
-                    <div key={inv.id} className="flex items-center gap-1.5 text-xs bg-gray-50 rounded px-2 py-1.5">
-                      <span className="flex-1 text-gray-400 truncate font-mono">{inv.invite_url}</span>
-                      <CopyButton text={inv.invite_url} />
-                      <button onClick={() => handleCancelInvite(inv.id)} className="text-gray-300 hover:text-red-400 ml-1">✕</button>
+                  <p className="text-[11px] text-gray-400">
+                    {t('group.invite.hint')}
+                  </p>
+                  {invitations.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="flex items-center gap-1.5 text-xs bg-gray-50 rounded px-2 py-1.5"
+                    >
+                      <span className="flex-1 text-gray-400 truncate font-mono">
+                        {inv.invite_url}
+                      </span>
+                      <CopyButton
+                        text={inv.invite_url}
+                        copyLabel={t('group.invite.copy')}
+                        copiedLabel={t('group.invite.copied')}
+                      />
+                      <button
+                        onClick={() => handleCancelInvite(inv.id)}
+                        className="text-gray-300 hover:text-red-400 ml-1"
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -170,16 +305,32 @@ function GroupPanel({ group, currentUserId, onClose, onLeft, onDeleted }: {
 
         {/* Footer actions */}
         <div className="px-5 py-4 border-t flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={handleLeave} disabled={leaving}
-            className="text-red-500 border-red-200 hover:bg-red-50">
-            {leaving ? '...' : 'Salir del grupo'}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLeave}
+            disabled={leaving}
+            className="text-red-500 border-red-200 hover:bg-red-50"
+          >
+            {leaving ? '...' : t('group.leave')}
           </Button>
           {group.is_admin && (
-            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
-              {deleting ? '...' : 'Eliminar grupo'}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? '...' : t('group.delete')}
             </Button>
           )}
-          <Button size="sm" onClick={onClose} className="bg-green-600 hover:bg-green-700 text-white">Listo</Button>
+          <Button
+            size="sm"
+            onClick={onClose}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            {t('group.done')}
+          </Button>
         </div>
       </div>
     </div>
@@ -187,7 +338,14 @@ function GroupPanel({ group, currentUserId, onClose, onLeft, onDeleted }: {
 }
 
 // ─── Create group modal ───────────────────────────────────────────
-function CreateGroupModal({ onCreated, onClose }: { onCreated: (g: PlayGroup) => void; onClose: () => void }) {
+function CreateGroupModal({
+  onCreated,
+  onClose,
+}: {
+  onCreated: (g: PlayGroup) => void;
+  onClose: () => void;
+}) {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -196,24 +354,46 @@ function CreateGroupModal({ onCreated, onClose }: { onCreated: (g: PlayGroup) =>
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
-    try { onCreated(await createGroup(name.trim())); }
-    catch (err: any) { setError(err?.response?.data?.errors?.join(', ') ?? 'Error'); setSaving(false); }
+    try {
+      onCreated(await createGroup(name.trim()));
+    } catch (err: any) {
+      setError(err?.response?.data?.errors?.join(', ') ?? 'Error');
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
-        <h2 className="font-bold text-gray-900 mb-4">Crear nuevo grupo</h2>
+        <h2 className="font-bold text-gray-900 mb-4">
+          {t('group.create.title')}
+        </h2>
         <form onSubmit={submit} className="space-y-3">
-          <Input placeholder="Ej: Familia, Trabajo, Amigos..." value={name}
-            onChange={e => setName(e.target.value)} maxLength={60} autoFocus />
+          <Input
+            placeholder={t('group.create.placeholder')}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={60}
+            autoFocus
+            className="placeholder:text-gray-300"
+          />
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" size="sm" disabled={saving || !name.trim()}
-              className="bg-green-600 hover:bg-green-700 text-white">
-              {saving ? 'Creando...' : 'Crear grupo'}
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+              {t('group.create.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={saving || !name.trim()}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {saving ? t('group.create.loading') : t('group.create.submit')}
             </Button>
           </div>
         </form>
@@ -240,7 +420,7 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
   // Load my groups on mount, auto-select the first one
   useEffect(() => {
     getMyGroups()
-      .then(gs => {
+      .then((gs) => {
         setGroups(gs);
         if (gs.length > 0) setSelectedGroupId(gs[0].id);
         setGroupsLoaded(true);
@@ -257,54 +437,72 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
       .finally(() => setLoadingRanking(false));
   }, [selectedGroupId, groupsLoaded]);
 
-  const openPanel = async (g: PlayGroup) => { setPanelGroup(await getGroup(g.id)); };
+  const openPanel = async (g: PlayGroup) => {
+    setPanelGroup(await getGroup(g.id));
+  };
 
   const handleGroupCreated = (g: PlayGroup) => {
-    setGroups(prev => [...prev, g]);
+    setGroups((prev) => [...prev, g]);
     setSelectedGroupId(g.id);
     setShowCreate(false);
   };
 
   const handleLeft = () => {
-    setGroups(prev => prev.filter(g => g.id !== panelGroup?.id));
+    setGroups((prev) => prev.filter((g) => g.id !== panelGroup?.id));
     if (selectedGroupId === panelGroup?.id) setSelectedGroupId(null);
     setPanelGroup(null);
   };
 
   const handleDeleted = () => {
-    setGroups(prev => prev.filter(g => g.id !== panelGroup?.id));
+    setGroups((prev) => prev.filter((g) => g.id !== panelGroup?.id));
     if (selectedGroupId === panelGroup?.id) setSelectedGroupId(null);
     setPanelGroup(null);
   };
 
-  const canViewProfile = (p: Participant) => {
-    if (p.user.id === me?.id) return true;
-    // All visible users are group members, so profiles are always accessible
-    return true;
-  };
-
   const goToProfile = (item: Participant) => {
-    if (!canViewProfile(item)) return;
     navigate(`/users/${item.user.id}`, {
-      state: { name: item.user.name, points: item.points, position: item.position, avatar_url: item.user.avatar_url },
+      state: {
+        name: item.user.name,
+        points: item.points,
+        position: item.position,
+        avatar_url: item.user.avatar_url,
+      },
     });
   };
 
   const getTrend = (cur: number, prev: number, iconOnly = false) => {
-    if (cur < prev) return <span className="text-green-600 font-semibold">{iconOnly ? t('ranking.risingIcon') : t('ranking.rising')}</span>;
-    if (cur > prev) return <span className="text-destructive font-semibold">{iconOnly ? t('ranking.fallingIcon') : t('ranking.falling')}</span>;
-    return <span className="text-muted-foreground">{iconOnly ? t('ranking.steadyIcon') : t('ranking.steady')}</span>;
+    if (cur < prev)
+      return (
+        <span className="text-green-600 font-semibold">
+          {iconOnly ? t('ranking.risingIcon') : t('ranking.rising')}
+        </span>
+      );
+    if (cur > prev)
+      return (
+        <span className="text-destructive font-semibold">
+          {iconOnly ? t('ranking.fallingIcon') : t('ranking.falling')}
+        </span>
+      );
+    return (
+      <span className="text-muted-foreground">
+        {iconOnly ? t('ranking.steadyIcon') : t('ranking.steady')}
+      </span>
+    );
   };
 
-  const getGridCols = (n: number) => n === 1 ? 'grid-cols-1 max-w-md mx-auto' : n === 2 ? 'sm:grid-cols-2 max-w-2xl mx-auto' : 'sm:grid-cols-3';
+  const getGridCols = (n: number) =>
+    n === 1
+      ? 'grid-cols-1 max-w-md mx-auto'
+      : n === 2
+      ? 'sm:grid-cols-2 max-w-2xl mx-auto'
+      : 'sm:grid-cols-3';
   const topThree = ranking.slice(0, 3);
 
   return (
     <div className="space-y-4">
-
       {/* ── Group selector bar ── */}
       <div className="flex flex-wrap items-center gap-2 pb-2 border-b">
-        {groups.map(g => (
+        {groups.map((g) => (
           <div key={g.id} className="flex items-center gap-1">
             <button
               onClick={() => setSelectedGroupId(g.id)}
@@ -316,8 +514,11 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
             >
               👥 {g.name}
             </button>
-            <button onClick={() => openPanel(g)} title="Gestionar grupo"
-              className="text-gray-300 hover:text-gray-500 text-sm transition-colors">
+            <button
+              onClick={() => openPanel(g)}
+              title={t('group.manage')}
+              className="text-gray-300 hover:text-gray-500 text-sm transition-colors"
+            >
               ⚙️
             </button>
           </div>
@@ -327,30 +528,36 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
           onClick={() => setShowCreate(true)}
           className="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-gray-300 text-gray-400 hover:border-green-500 hover:text-green-600 transition-colors"
         >
-          + Nuevo grupo
+          {t('ranking.newGroup')}
         </button>
       </div>
 
       {/* ── Content ── */}
       {!groupsLoaded ? (
-        <div className="py-16 text-center text-gray-400 animate-pulse">Cargando...</div>
+        <div className="py-16 text-center text-gray-400 animate-pulse">
+          {t('ranking.loading')}
+        </div>
       ) : groups.length === 0 ? (
         <Card className="p-10 text-center space-y-3">
           <p className="text-2xl">👥</p>
-          <p className="font-semibold text-gray-700">Aún no perteneces a ningún grupo</p>
-          <p className="text-sm text-gray-400">Crea un grupo e invita a tus amigos, familia o compañeros para comparar predicciones.</p>
+          <p className="font-semibold text-gray-700">
+            {t('ranking.noGroups.title')}
+          </p>
+          <p className="text-sm text-gray-400">{t('ranking.noGroups.desc')}</p>
           <button
             onClick={() => setShowCreate(true)}
             className="mt-2 px-4 py-2 rounded-full text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
           >
-            + Crear mi primer grupo
+            {t('ranking.noGroups.cta')}
           </button>
         </Card>
       ) : loadingRanking ? (
-        <div className="py-16 text-center text-gray-400 animate-pulse">Cargando ranking...</div>
+        <div className="py-16 text-center text-gray-400 animate-pulse">
+          {t('ranking.loadingRanking')}
+        </div>
       ) : ranking.length === 0 ? (
         <Card className="p-8 text-center text-muted-foreground">
-          Este grupo no tiene participantes aún. Invita a tus amigos usando ⚙️.
+          {t('ranking.noParticipants')}
         </Card>
       ) : (
         <div className="space-y-6">
@@ -358,22 +565,36 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
           <div className={`grid gap-4 ${getGridCols(topThree.length)}`}>
             {topThree.map((item, index) => {
               const medals = ['🥇', '🥈', '🥉'];
-              const clickable = canViewProfile(item);
               return (
-                <Card key={item.user.id} onClick={() => goToProfile(item)}
-                  className={`overflow-hidden transition-all ${clickable ? 'cursor-pointer hover:shadow-md hover:border-primary/30' : 'cursor-default'} ${index === 0 ? 'border-primary bg-primary/5 shadow-sm' : ''}`}>
+                <Card
+                  key={item.user.id}
+                  onClick={() => goToProfile(item)}
+                  className={`overflow-hidden transition-all cursor-pointer hover:shadow-md hover:border-primary/30 ${
+                    index === 0 ? 'border-primary bg-primary/5 shadow-sm' : ''
+                  }`}
+                >
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">{medals[index]} {t('ranking.place')} {item.position}</CardTitle>
-                    <span className="text-2xl font-bold tabular-nums">{item.points} {t('ranking.pts')}</span>
+                    <CardTitle className="text-sm font-medium">
+                      {medals[index]} {t('ranking.place')} {item.position}
+                    </CardTitle>
+                    <span className="text-2xl font-bold tabular-nums">
+                      {item.points} {t('ranking.pts')}
+                    </span>
                   </CardHeader>
                   <CardContent className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 border">
                       <AvatarImage src={item.user.avatar_url ?? undefined} />
-                      <AvatarFallback>{item.user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>
+                        {getInitials(item.user.name)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="overflow-hidden">
-                      <p className="font-semibold text-sm truncate">{item.user.name}</p>
-                      <p className="text-xs">{getTrend(item.position, item.previous_position)}</p>
+                      <p className="font-semibold text-sm truncate">
+                        {item.user.name}
+                      </p>
+                      <p className="text-xs">
+                        {getTrend(item.position, item.previous_position)}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -387,36 +608,51 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[60px] text-center">{t('ranking.pos')}</TableHead>
+                    <TableHead className="w-[60px] text-center">
+                      {t('ranking.pos')}
+                    </TableHead>
                     <TableHead>{t('ranking.participant')}</TableHead>
-                    <TableHead className="text-right">{t('ranking.trend')}</TableHead>
-                    <TableHead className="text-right font-bold">{t('ranking.points')}</TableHead>
+                    <TableHead className="text-right">
+                      {t('ranking.trend')}
+                    </TableHead>
+                    <TableHead className="text-right font-bold">
+                      {t('ranking.points')}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ranking.map(item => {
-                    const clickable = canViewProfile(item);
-                    return (
-                      <TableRow key={item.user.id} onClick={() => goToProfile(item)}
-                        className={`transition-colors ${clickable ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}>
-                        <TableCell className="text-center font-bold">{item.position}</TableCell>
-                        <TableCell className="py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={item.user.avatar_url ?? undefined} />
-                              <AvatarFallback>{item.user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm">{item.user.name}</span>
-                              {!clickable && <span className="text-[10px] text-gray-300">🔒 Perfil privado</span>}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right text-sm">{getTrend(item.position, item.previous_position, true)}</TableCell>
-                        <TableCell className="text-right font-bold tabular-nums text-base">{item.points} {t('ranking.pts')}</TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {ranking.map((item) => (
+                    <TableRow
+                      key={item.user.id}
+                      onClick={() => goToProfile(item)}
+                      className="transition-colors cursor-pointer hover:bg-muted/50"
+                    >
+                      <TableCell className="text-center font-bold">
+                        {item.position}
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={item.user.avatar_url ?? undefined}
+                            />
+                            <AvatarFallback>
+                              {getInitials(item.user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm">
+                            {item.user.name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right text-sm">
+                        {getTrend(item.position, item.previous_position, true)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold tabular-nums text-base">
+                        {item.points} {t('ranking.pts')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>
@@ -425,8 +661,21 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
       )}
 
       {/* Modals */}
-      {showCreate && <CreateGroupModal onCreated={handleGroupCreated} onClose={() => setShowCreate(false)} />}
-      {panelGroup && <GroupPanel group={panelGroup} currentUserId={me!.id} onClose={() => setPanelGroup(null)} onLeft={handleLeft} onDeleted={handleDeleted} />}
+      {showCreate && (
+        <CreateGroupModal
+          onCreated={handleGroupCreated}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
+      {panelGroup && (
+        <GroupPanel
+          group={panelGroup}
+          currentUserId={me!.id}
+          onClose={() => setPanelGroup(null)}
+          onLeft={handleLeft}
+          onDeleted={handleDeleted}
+        />
+      )}
     </div>
   );
 }
