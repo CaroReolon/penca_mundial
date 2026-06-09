@@ -4,7 +4,9 @@ class Api::TournamentRankingsController < ApplicationController
 
     ranking = tournament.tournament_rankings
       .includes(user: { avatar_attachment: :blob })
-      .find_by(user_id: params[:id])
+      .find_by(user_id: params[:id], play_group_id: params[:play_group_id])
+
+    return render json: { error: 'Not found' }, status: :not_found unless ranking
 
     render json: {
       user: {
@@ -20,17 +22,14 @@ class Api::TournamentRankingsController < ApplicationController
   end
 
   def index
+    return render json: [] unless params[:play_group_id].present?
+
     tournament = Tournament.find(params[:tournament_id])
 
     rankings = tournament.tournament_rankings
       .includes(user: { avatar_attachment: :blob })
+      .where(play_group_id: params[:play_group_id])
       .order(:position)
-
-    if params[:play_group_id].present?
-      group = PlayGroup.find(params[:play_group_id])
-      member_ids = group.memberships.pluck(:user_id)
-      rankings = rankings.where(user_id: member_ids)
-    end
 
     render json: rankings.map { |ranking|
       {

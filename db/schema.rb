@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_08_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_09_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -153,6 +153,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_08_100000) do
     t.integer "previous_position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "play_group_id"
+    t.index ["play_group_id"], name: "index_tournament_rankings_on_play_group_id"
+    t.index ["tournament_id", "user_id", "play_group_id"], name: "index_tournament_rankings_on_tournament_user_group", unique: true
     t.index ["tournament_id"], name: "index_tournament_rankings_on_tournament_id"
     t.index ["user_id"], name: "index_tournament_rankings_on_user_id"
   end
