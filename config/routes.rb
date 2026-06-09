@@ -10,6 +10,12 @@ Rails.application.routes.draw do
       registrations: 'users/registrations'
     }
 
+  # Devise's sign_up path_name only affects GET /api/register (new action).
+  # The POST (create) defaults to /api, so we add the correct path explicitly.
+  devise_scope :user do
+    post 'api/register', to: 'users/registrations#create'
+  end
+
   namespace :api do
     get    "me",         to: "me#show"
     put    "me/avatar",  to: "avatar#update"
