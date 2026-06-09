@@ -1,23 +1,20 @@
 Rails.application.routes.draw do
   devise_for :users,
-  path: '',
-  path_names: {
-    sign_in: 'login',
-    sign_out: 'logout'
-  },
-  controllers: {
-    registrations: 'users/registrations'
-  }
+    path: 'api',
+    path_names: {
+      sign_in:  'login',
+      sign_out: 'logout',
+      sign_up:  'register'
+    },
+    controllers: {
+      registrations: 'users/registrations'
+    }
 
-  devise_scope :user do
-    get  'register', to: 'users/registrations#new'
-    post 'register', to: 'users/registrations#create'
-  end
-  
   namespace :api do
-    get  "me",         to: "me#show"
-    put  "me/avatar",  to: "avatar#update"
-    delete "me/avatar", to: "avatar#destroy"
+    get    "me",         to: "me#show"
+    put    "me/avatar",  to: "avatar#update"
+    delete "me/avatar",  to: "avatar#destroy"
+
     resources :matches, only: [:index]
 
     resources :tournaments, only: [:show, :index] do
@@ -31,11 +28,11 @@ Rails.application.routes.draw do
     resources :play_groups, only: [:index, :create, :show, :destroy] do
       resources :invitations, only: [:create, :destroy],
                               controller: 'play_group_invitations'
-      delete 'leave',              to: 'invitations#leave',             on: :member
-      delete 'members/:user_id',   to: 'play_group_memberships#destroy', on: :member
+      delete 'leave',            to: 'invitations#leave',              on: :member
+      delete 'members/:user_id', to: 'play_group_memberships#destroy', on: :member
     end
 
-    get  'invitations/:token',       to: 'invitations#show'
+    get  'invitations/:token',        to: 'invitations#show'
     post 'invitations/:token/accept', to: 'invitations#accept'
 
     namespace :admin do
