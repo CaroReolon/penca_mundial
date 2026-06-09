@@ -1,14 +1,18 @@
 Rails.application.routes.draw do
   devise_for :users,
-    path: '',
-    path_names: {
-      sign_in:  'login',
-      sign_out: 'logout',
-      sign_up:  'register'
-    },
-    controllers: {
-      registrations: 'users/registrations'
-    }
+  path: '',
+  path_names: {
+    sign_in: 'login',
+    sign_out: 'logout'
+  },
+  controllers: {
+    registrations: 'users/registrations'
+  }
+
+  devise_scope :user do
+    get  'register', to: 'users/registrations#new'
+    post 'register', to: 'users/registrations#create'
+  end
   
   namespace :api do
     get  "me",         to: "me#show"
