@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   end
 
   namespace :api do
+    post 'password/forgot', to: 'passwords#forgot'
+    post 'password/reset',  to: 'passwords#reset'
+
     get    "me",         to: "me#show"
     put    "me/avatar",  to: "avatar#update"
     delete "me/avatar",  to: "avatar#destroy"

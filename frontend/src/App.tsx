@@ -6,6 +6,8 @@ import UserProfile from './pages/UserProfile';
 import AdminPanel from './pages/AdminPanel';
 import InvitePage from './pages/InvitePage';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/invite/:token" element={<InvitePage />} />
 
         <Route

@@ -166,13 +166,18 @@ export default function Login() {
             </form>
           </div>
 
-          {/* Register link */}
-          <p className="pb-6 text-center text-sm text-gray-400">
-            {t('login.noAccount')}{' '}
-            <Link to="/register" className="text-green-600 font-medium hover:underline">
-              {t('login.signUp')}
+          {/* Register + forgot password links */}
+          <div className="pb-6 flex flex-col items-center gap-2">
+            <p className="text-sm text-gray-400">
+              {t('login.noAccount')}{' '}
+              <Link to="/register" className="text-green-600 font-medium hover:underline">
+                {t('login.signUp')}
+              </Link>
+            </p>
+            <Link to="/forgot-password" className="text-xs text-gray-400 hover:text-green-600 hover:underline transition-colors">
+              {t('login.forgotPassword')}
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>

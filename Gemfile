@@ -5,6 +5,9 @@ ruby "3.2.1"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.1.6"
 
+# Loads .env file into ENV in development
+gem "dotenv-rails", groups: [:development, :test]
+
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 
