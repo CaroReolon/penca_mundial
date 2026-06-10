@@ -16,15 +16,14 @@ export default function ForgotPassword() {
   const { register, handleSubmit } = useForm<FormData>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [token, setToken] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
       setError('');
       await api.post('/api/password/forgot', { email: data.email });
-      setToken('sent'); // flag to show success state
+      setSent(true);
     } catch {
       setError(t('forgot.error'));
     } finally {
@@ -32,14 +31,7 @@ export default function ForgotPassword() {
     }
   };
 
-  const copyToken = () => {
-    if (!token) return;
-    navigator.clipboard.writeText(token);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  void copied; // suppress unused warning
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -73,7 +65,7 @@ export default function ForgotPassword() {
             <h2 className="text-xl font-bold text-gray-900 mb-1">{t('forgot.title')}</h2>
             <p className="text-sm text-gray-400 mb-6">{t('forgot.subtitle')}</p>
 
-            {!token ? (
+            {!sent ? (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="space-y-1.5">
                   <Label className="text-gray-700 text-sm font-medium">Email</Label>
