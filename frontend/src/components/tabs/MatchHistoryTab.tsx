@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { PastMatchCard } from '@/components/PastMatchCard';
+import { MatchFilterBar } from '@/components/MatchFilterBar';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import type { MatchStage } from '@/types/match';
+import type { StageFilter, GroupFilter } from '@/components/MatchFilterBar';
 
 type Props = {
   matches: any[];
@@ -59,6 +62,8 @@ function ScoringGuide() {
 
 export function MatchHistoryTab({ matches }: Props) {
   const { t } = useLanguage();
+  const [selectedStage, setSelectedStage] = useState<StageFilter>('all');
+  const [selectedGroup, setSelectedGroup] = useState<GroupFilter>('all');
 
   if (!matches || matches.length === 0) {
     return (
@@ -71,14 +76,53 @@ export function MatchHistoryTab({ matches }: Props) {
     );
   }
 
+  // Derive available filter options from the data
+  const availableStages = Array.from(
+    new Set(matches.map((m) => m.stage as MatchStage))
+  );
+
+  const availableGroups = Array.from(
+    new Set(
+      matches
+        .filter((m) => m.stage === 'group_stage' && m.group)
+        .map((m) => m.group as string)
+    )
+  ).sort();
+
+  // Apply filters
+  let displayed = matches;
+
+  if (selectedStage !== 'all') {
+    displayed = displayed.filter((m) => m.stage === selectedStage);
+  }
+  if (selectedGroup !== 'all') {
+    displayed = displayed.filter((m) => m.group === selectedGroup);
+  }
+
   return (
     <div>
       <ScoringGuide />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {matches.map((match) => (
-          <PastMatchCard key={match.id} match={match} />
-        ))}
-      </div>
+
+      <MatchFilterBar
+        availableStages={availableStages}
+        availableGroups={availableGroups}
+        selectedStage={selectedStage}
+        selectedGroup={selectedGroup}
+        onStageChange={setSelectedStage}
+        onGroupChange={setSelectedGroup}
+      />
+
+      {displayed.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
+          {t('filter.noMatches')}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {displayed.map((match) => (
+            <PastMatchCard key={match.id} match={match} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

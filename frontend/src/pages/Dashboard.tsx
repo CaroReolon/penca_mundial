@@ -17,9 +17,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getMatches('upcoming').then(setMatches);
-    getMatches('past').then((data) =>
-      setPastMatches(data.filter((m: any) => m.prediction !== null))
-    );
+    getMatches('past').then(setPastMatches);
     getTornamentsRanking(1).then(setRanking);
   }, []);
 

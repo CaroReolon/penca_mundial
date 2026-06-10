@@ -8,9 +8,19 @@ export interface Team {
   flag: string;
 }
 
+export type MatchStage =
+  | 'group_stage'
+  | 'round_of_32'
+  | 'round_of_16'
+  | 'quarter_final'
+  | 'semi_final'
+  | 'third_place'
+  | 'final';
+
 export interface Match {
   id: number;
-  group: string;
+  stage: MatchStage;
+  group: string | null;
   kickoff_at: string;
   stadium: string;
   stadium_en?: string;

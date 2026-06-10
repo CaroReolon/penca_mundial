@@ -70,10 +70,15 @@ export function MatchCard({ match }: Props) {
     <Card className="flex flex-col justify-between overflow-hidden p-5 transition-all hover:shadow-md">
       <div>
         <div className="mb-6 flex items-center justify-between border-b pb-2 text-xs font-medium text-muted-foreground">
-          <span className="rounded-md bg-muted px-2 py-0.5">
-            {t('match.group')} {match.group}
-          </span>
-
+          {match.stage === 'group_stage' ? (
+            <span className="rounded-md bg-muted px-2 py-0.5">
+              {t('match.group')} {match.group}
+            </span>
+          ) : (
+            <span className="rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-amber-800">
+              {t(`match.stage.${match.stage}` as any)}
+            </span>
+          )}
           <span className="capitalize">{formattedDate}</span>
         </div>
 

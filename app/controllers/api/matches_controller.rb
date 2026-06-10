@@ -15,7 +15,7 @@ class Api::MatchesController < ApplicationController
         matches
       end
 
-    matches = matches.order(:kickoff_at)
+    matches = matches.order(kickoff_at: params[:status] == "past" ? :desc : :asc)
 
     render json: matches.map { |match|
       {
@@ -26,6 +26,7 @@ class Api::MatchesController < ApplicationController
         stadium:    match.stadium,
         stadium_en: match.stadium_en,
 
+        stage: match.stage,
         group: match.group&.name,
 
         home_team: serialize_team(match.home_team),
@@ -33,6 +34,7 @@ class Api::MatchesController < ApplicationController
 
         home_score: match.home_score,
         away_score: match.away_score,
+        completed:  match.completed,
 
         prediction: current_user
           .predictions

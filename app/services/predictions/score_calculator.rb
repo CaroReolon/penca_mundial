@@ -6,7 +6,7 @@ module Predictions
     end
 
     def call
-      return 0 unless @match.completed?
+      return 0 unless @match.home_score.present? && @match.away_score.present?
 
       if exact_score?
         5

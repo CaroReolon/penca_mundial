@@ -34,3 +34,6 @@
 
 #Ignore test seeds
 /db/seeds/test.rb
+
+# Ignore dump files
+/dump/*
