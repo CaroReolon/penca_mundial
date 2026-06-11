@@ -36,6 +36,29 @@ class Api::InvitationsController < ApplicationController
     # Already a member — just mark accepted
     unless group.memberships.exists?(user: current_user)
       group.memberships.create!(user: current_user, role: :member)
+
+      # Create/update ranking for the new member
+      user_points = Prediction
+        .joins(:match)
+        .where(matches: { tournament_id: group.tournament_id }, user: current_user)
+        .sum(:points_awarded)
+
+      if user_points > 0
+        # User has real points — recalculate the whole group ranking
+        UpdateTournamentRankingJob.perform_later(group.tournament_id)
+      else
+        # New user with no points — place last with 0
+        last_position = TournamentRanking.where(play_group: group).maximum(:position).to_i
+        TournamentRanking.find_or_create_by!(
+          tournament: group.tournament,
+          user:       current_user,
+          play_group: group
+        ) do |r|
+          r.points            = 0
+          r.position          = last_position + 1
+          r.previous_position = nil
+        end
+      end
     end
 
     invitation.update!(status: :accepted, accepted_by: current_user)
