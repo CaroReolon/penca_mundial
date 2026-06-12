@@ -15,7 +15,9 @@ class Api::UserMatchesController < ApplicationController
 
     render json: matches.map { |match|
       {
-        id: match.id,
+        id:        match.id,
+        stage:     match.stage,
+        completed: match.completed,
 
         kickoff_at: match.kickoff_at,
 

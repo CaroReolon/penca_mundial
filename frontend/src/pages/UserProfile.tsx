@@ -16,13 +16,16 @@ type LocationState = {
 
 type PastMatch = {
   id: string;
-  group: string;
+  stage: string;
+  completed: boolean;
+  group: string | null;
   kickoff_at: string;
   stadium: string;
-  home_team: { name: string; flag: string };
-  away_team: { name: string; flag: string };
-  home_score: number;
-  away_score: number;
+  stadium_en?: string;
+  home_team: { name: string; name_en: string; short_name: string; short_name_en: string; code: string; flag: string };
+  away_team: { name: string; name_en: string; short_name: string; short_name_en: string; code: string; flag: string };
+  home_score: number | null;
+  away_score: number | null;
   prediction: {
     id: string;
     away_score: number;
