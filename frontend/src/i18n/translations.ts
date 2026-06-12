@@ -127,11 +127,11 @@ const translations = {
     'history.scoring.diff.pts': '3 puntos',
     'history.scoring.diff.label': 'Diferencia de goles correcta',
     'history.scoring.diff.desc':
-      'Acertó el resultado (victoria o empate) y la diferencia de goles, pero no el marcador exacto (ej.: pronosticó 2-0 y terminó 3-1, o pronosticó cualquier empate y el partido terminó en empate).',
-    'history.scoring.winner.pts': '1 punto',
+      'Acertó la diferencia de goles pero no el marcador exacto. Incluye los empates: si pronosticó empate y el partido terminó empatado, suma 3 puntos (ej.: pronosticó 1-1 y terminó 0-0).',
+    'history.scoring.winner.pts': '2 puntos',
     'history.scoring.winner.label': 'Ganador correcto',
     'history.scoring.winner.desc':
-      'Solo acertó el equipo ganador o el empate, sin coincidir en la diferencia ni en el marcador exacto.',
+      'Acertó qué equipo ganó, pero no la diferencia de goles ni el marcador exacto. No aplica a empates.',
     'history.scoring.zero.pts': '0 puntos',
     'history.scoring.zero.label': 'Sin acierto',
     'history.scoring.zero.desc': 'El resultado fue diferente a su pronóstico.',
@@ -313,11 +313,11 @@ const translations = {
     'history.scoring.diff.pts': '3 points',
     'history.scoring.diff.label': 'Correct goal difference',
     'history.scoring.diff.desc':
-      'You got the outcome (win or draw) and the goal difference right, but not the exact score (e.g. you predicted 2-0 and it ended 3-1, or you predicted any draw and the match ended in a draw).',
-    'history.scoring.winner.pts': '1 point',
+      'You got the goal difference right but not the exact score. Draws are included here: if you predicted a draw and the match ended in a draw, you get 3 points (e.g. you said 1-1 and it ended 0-0).',
+    'history.scoring.winner.pts': '2 points',
     'history.scoring.winner.label': 'Correct winner',
     'history.scoring.winner.desc':
-      'You only got the winner (or draw) right, without matching the goal difference or exact score.',
+      'You predicted the right winning team, but not the goal difference or exact score. Does not apply to draws.',
     'history.scoring.zero.pts': '0 points',
     'history.scoring.zero.label': 'No match',
     'history.scoring.zero.desc':
