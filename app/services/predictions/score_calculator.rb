@@ -13,7 +13,7 @@ module Predictions
       elsif goal_difference_matches?
         3
       elsif winner_matches?
-        1
+        2
       else
         0
       end
