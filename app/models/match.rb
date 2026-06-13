@@ -47,16 +47,9 @@ class Match < ApplicationRecord
 
   private
 
-  def result_changed?
-    saved_change_to_home_score? ||
-      saved_change_to_away_score? ||
-      saved_change_to_completed?
-  end
-
-  def update_predictions_scores
+def update_predictions_scores
     return unless previous_changes.key?("home_score") ||
-                  previous_changes.key?("away_score") ||
-                  previous_changes.key?("completed")
+                  previous_changes.key?("away_score")
 
     UpdateMatchPredictionsJob.perform_later(id)
   end
