@@ -11,7 +11,7 @@ class Api::UserMatchesController < ApplicationController
     matches = Match
       .includes(:group, :home_team, :away_team)
       .where("kickoff_at <= ?", Time.current)
-      .order(:kickoff_at)
+      .order(kickoff_at: :desc)
 
     render json: matches.map { |match|
       {
