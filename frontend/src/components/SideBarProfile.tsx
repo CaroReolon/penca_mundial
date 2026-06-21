@@ -11,7 +11,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { uploadAvatar, deleteAvatar } from '@/services/userService';
+import { uploadAvatar, deleteAvatar, updateGroupMessage } from '@/services/userService';
+import { getMyGroups, type PlayGroup } from '@/services/playGroupService';
 
 export function SideBarProfile() {
   const { logout, user, refreshUser } = useAuth();
@@ -19,6 +20,31 @@ export function SideBarProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [groups, setGroups] = useState<PlayGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [messageInput, setMessageInput] = useState('');
+  const [savingMessage, setSavingMessage] = useState(false);
+
+  const handleOpenMessageModal = async () => {
+    const gs = await getMyGroups();
+    setGroups(gs);
+    setSelectedGroupId(gs.length === 1 ? gs[0].id : null);
+    setMessageInput('');
+    setShowMessageModal(true);
+  };
+
+  const handleSaveMessage = async () => {
+    if (!selectedGroupId) return;
+    setSavingMessage(true);
+    try {
+      await updateGroupMessage(selectedGroupId, messageInput);
+      setShowMessageModal(false);
+    } finally {
+      setSavingMessage(false);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -103,6 +129,13 @@ export function SideBarProfile() {
             {isUploading ? t('sidebar.uploading') : t('sidebar.uploadPhoto')}
           </DropdownMenuItem>
 
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleOpenMessageModal}
+          >
+            💬 {t('sidebar.editMessage') ?? 'Edit group message'}
+          </DropdownMenuItem>
+
           {user?.avatar_url && (
             <DropdownMenuItem
               className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
@@ -144,6 +177,55 @@ export function SideBarProfile() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {showMessageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
+            <h3 className="font-bold text-lg">Tu mensaje en el grupo 💬</h3>
+            <p className="text-sm text-muted-foreground">Escribí algo gracioso para mostrar en el ranking.</p>
+
+            {groups.length > 1 && (
+              <select
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                value={selectedGroupId ?? ''}
+                onChange={(e) => setSelectedGroupId(Number(e.target.value))}
+              >
+                <option value="">Elegí un grupo...</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            )}
+
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              maxLength={100}
+              placeholder="Ej: Campeón en construcción 🏆"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveMessage()}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground text-right">{messageInput.length}/100</p>
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowMessageModal(false)}
+                className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveMessage}
+                disabled={savingMessage || !selectedGroupId}
+                className="px-4 py-2 rounded-lg text-sm bg-primary text-white font-semibold hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingMessage ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

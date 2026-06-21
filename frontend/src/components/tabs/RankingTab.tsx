@@ -620,22 +620,25 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                           {getInitials(item.user.name)}
                         </AvatarFallback>
                       </Avatar>
-                      {item.user.id === me?.id && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
-                          className="absolute -bottom-1 -right-1 bg-white border rounded-full text-[10px] w-4 h-4 flex items-center justify-center shadow hover:bg-gray-50"
-                          title="Edit message"
-                        >✏️</button>
-                      )}
                     </div>
                     <div className="overflow-hidden flex-1">
                       <p className="font-semibold text-sm truncate">{item.user.name}</p>
                       <p className="text-xs">{getTrend(item.position, item.previous_position)}</p>
-                      {item.user.message && (
+                      {item.user.id === me?.id ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                          className="mt-1 ml-1 text-left w-full"
+                        >
+                          <MessageBubble
+                            message={item.user.message ?? '✏️ Agregar mensaje...'}
+                            className="hover:brightness-95"
+                          />
+                        </button>
+                      ) : item.user.message ? (
                         <div className="mt-1 ml-1">
                           <MessageBubble message={item.user.message} />
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
@@ -679,9 +682,19 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                           </Avatar>
                           <div className="min-w-0 flex-1 overflow-hidden">
                             <span className="font-medium text-sm block truncate">{item.user.name}</span>
-                            {item.user.message && (
+                            {item.user.id === me?.id ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                                className="text-left w-full mt-0.5"
+                              >
+                                <MessageBubble
+                                  message={item.user.message ?? '✏️ Agregar mensaje...'}
+                                  className="hover:brightness-95"
+                                />
+                              </button>
+                            ) : item.user.message ? (
                               <MessageBubble message={item.user.message} />
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </TableCell>
