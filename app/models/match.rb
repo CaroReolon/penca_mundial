@@ -44,13 +44,18 @@ class Match < ApplicationRecord
   validates :kickoff_at, presence: true
 
   after_update_commit :update_predictions_scores
+  after_update_commit :update_highlights, if: -> { saved_change_to_completed?(to: true) }
 
   private
 
-def update_predictions_scores
+  def update_predictions_scores
     return unless previous_changes.key?("home_score") ||
                   previous_changes.key?("away_score")
 
     UpdateMatchPredictionsJob.perform_later(id)
+  end
+
+  def update_highlights
+    UpdateHighlightsJob.perform_later(id)
   end
 end

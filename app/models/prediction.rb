@@ -10,7 +10,7 @@ class Prediction < ApplicationRecord
     greater_than_or_equal_to: 0
   }
 
-  validate :match_has_not_started, if: :prediction_changed?
+  # validate :match_has_not_started, if: :prediction_changed?
 
   after_create :ensure_ranking
   
