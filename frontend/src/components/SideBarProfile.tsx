@@ -133,7 +133,7 @@ export function SideBarProfile() {
             className="cursor-pointer"
             onClick={handleOpenMessageModal}
           >
-            💬 {t('sidebar.editMessage') ?? 'Edit group message'}
+            💬 Editar mensaje del grupo
           </DropdownMenuItem>
 
           {user?.avatar_url && (
