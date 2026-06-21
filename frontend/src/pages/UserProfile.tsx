@@ -101,25 +101,25 @@ export default function UserProfile() {
     <div className="min-h-screen">
       <div className="min-h-screen mx-auto max-w-7xl bg-white px-6 py-6">
       {/* HEADER */}
-      <header className="mb-8 flex items-center justify-between border-b pb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-            className="text-muted-foreground"
-          >
-            {t('profile.back')}
-          </Button>
+      <header className="mb-8 border-b pb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/dashboard')}
+          className="text-muted-foreground mb-4"
+        >
+          {t('profile.back')}
+        </Button>
 
-          <Avatar className="h-12 w-12 border-2 border-primary/20">
+        <div className="flex flex-col items-center gap-3">
+          <Avatar className="h-24 w-24 border-2 border-primary/20">
             {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt={userName} />}
-            <AvatarFallback className="text-base font-semibold">
+            <AvatarFallback className="text-2xl font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
 
-          <div>
+          <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">{userName}</h1>
             <p className="text-sm text-muted-foreground">
               {userPosition != null && `📍 ${t('profile.position')} ${userPosition} • `}
