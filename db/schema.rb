@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_09_160000) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_21_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -61,6 +61,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_160000) do
     t.index ["tournament_id"], name: "index_groups_on_tournament_id"
   end
 
+  create_table "highlights", force: :cascade do |t|
+    t.bigint "match_id"
+    t.bigint "user_id"
+    t.integer "kind", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.boolean "shown", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id"], name: "index_highlights_on_match_id"
+    t.index ["user_id"], name: "index_highlights_on_user_id"
+  end
+
   create_table "matches", force: :cascade do |t|
     t.bigint "tournament_id", null: false
     t.bigint "group_id"
@@ -105,6 +118,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_160000) do
     t.integer "role", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "message", limit: 100
     t.index ["play_group_id", "user_id"], name: "idx_play_group_memberships_unique", unique: true
     t.index ["play_group_id", "user_id"], name: "index_play_group_memberships_on_play_group_id_and_user_id", unique: true
     t.index ["user_id"], name: "index_play_group_memberships_on_user_id"
@@ -198,6 +212,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_09_160000) do
   add_foreign_key "group_teams", "groups"
   add_foreign_key "group_teams", "teams"
   add_foreign_key "groups", "tournaments"
+  add_foreign_key "highlights", "matches"
+  add_foreign_key "highlights", "users"
   add_foreign_key "matches", "groups"
   add_foreign_key "matches", "matches", column: "next_match_id"
   add_foreign_key "matches", "teams", column: "away_team_id"

@@ -39,6 +39,7 @@ Rails.application.routes.draw do
                               controller: 'play_group_invitations'
       delete 'leave',            to: 'invitations#leave',              on: :member
       delete 'members/:user_id', to: 'play_group_memberships#destroy', on: :member
+      put    'message',          to: 'play_group_memberships#update_message', on: :member
     end
 
     get  'invitations/:token',        to: 'invitations#show'

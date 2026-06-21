@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MessageBubble } from '@/components/ui/message-bubble';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PastMatchCard } from '@/components/PastMatchCard';
@@ -12,6 +13,7 @@ type LocationState = {
   points?: number;
   position?: number;
   avatar_url?: string | null;
+  message?: string | null;
 };
 
 type PastMatch = {
@@ -45,6 +47,7 @@ export default function UserProfile() {
   const userPoints = state?.points;
   const userPosition = state?.position;
   const userAvatarUrl = state?.avatar_url ?? null;
+  const userMessage = state?.message ?? null;
 
   const [matches, setMatches] = useState<PastMatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -127,6 +130,9 @@ export default function UserProfile() {
                 ? t('profile.loading')
                 : `${userPoints ?? totalPoints} ${t('profile.totalPoints')} · ${matches.length} ${t('profile.predictions')}`}
             </p>
+            {userMessage && (
+              <MessageBubble message={`💬 ${userMessage}`} className="mt-2 max-w-xs mx-auto text-sm px-3 py-1.5" />
+            )}
           </div>
         </div>
       </header>

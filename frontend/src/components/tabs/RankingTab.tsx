@@ -29,18 +29,21 @@ import {
   type PlayGroupDetail,
   type PendingInvitation,
 } from '@/services/playGroupService';
+import { updateGroupMessage } from '@/services/userService';
+import { MessageBubble } from '@/components/ui/message-bubble';
 
 type Participant = {
   points: number;
   position: number;
   previous_position: number;
-  user: { id: number; name: string; email: string; avatar_url: string | null };
+  user: { id: number; name: string; email: string; avatar_url: string | null; message?: string | null };
 };
 
 type Props = { ranking: Participant[] };
 
 // Shared initials helper — same rule as SideBarProfile:
 // first letter of first word + first letter of last word (e.g. "John Doe" → "JD")
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -459,6 +462,33 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
     setPanelGroup(null);
   };
 
+  const [editingMessage, setEditingMessage] = useState(false);
+  const [messageInput, setMessageInput] = useState('');
+  const [savingMessage, setSavingMessage] = useState(false);
+
+  const myRankingEntry = ranking.find((r) => r.user.id === me?.id);
+
+  const handleEditMessage = () => {
+    setMessageInput(myRankingEntry?.user.message ?? '');
+    setEditingMessage(true);
+  };
+
+  const handleSaveMessage = async () => {
+    if (!selectedGroupId) return;
+    setSavingMessage(true);
+    try {
+      const saved = await updateGroupMessage(selectedGroupId, messageInput);
+      setRanking((prev) =>
+        prev.map((r) =>
+          r.user.id === me?.id ? { ...r, user: { ...r.user, message: saved } } : r
+        )
+      );
+      setEditingMessage(false);
+    } finally {
+      setSavingMessage(false);
+    }
+  };
+
   const goToProfile = (item: Participant) => {
     navigate(`/users/${item.user.id}`, {
       state: {
@@ -466,6 +496,7 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         points: item.points,
         position: item.position,
         avatar_url: item.user.avatar_url,
+        message: item.user.message,
       },
     });
   };
@@ -582,19 +613,29 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                     </span>
                   </CardHeader>
                   <CardContent className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border">
-                      <AvatarImage src={item.user.avatar_url ?? undefined} />
-                      <AvatarFallback>
-                        {getInitials(item.user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="overflow-hidden">
-                      <p className="font-semibold text-sm truncate">
-                        {item.user.name}
-                      </p>
-                      <p className="text-xs">
-                        {getTrend(item.position, item.previous_position)}
-                      </p>
+                    <div className="relative shrink-0">
+                      <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={item.user.avatar_url ?? undefined} />
+                        <AvatarFallback>
+                          {getInitials(item.user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {item.user.id === me?.id && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                          className="absolute -bottom-1 -right-1 bg-white border rounded-full text-[10px] w-4 h-4 flex items-center justify-center shadow hover:bg-gray-50"
+                          title="Edit message"
+                        >✏️</button>
+                      )}
+                    </div>
+                    <div className="overflow-hidden flex-1">
+                      <p className="font-semibold text-sm truncate">{item.user.name}</p>
+                      <p className="text-xs">{getTrend(item.position, item.previous_position)}</p>
+                      {item.user.message && (
+                        <div className="mt-1 ml-1">
+                          <MessageBubble message={item.user.message} />
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -605,17 +646,17 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
           {/* Full table */}
           <Card>
             <CardContent className="p-0">
-              <Table>
+              <Table className="w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[60px] text-center">
+                    <TableHead className="w-8 text-center px-2 whitespace-nowrap">
                       {t('ranking.pos')}
                     </TableHead>
                     <TableHead>{t('ranking.participant')}</TableHead>
-                    <TableHead className="text-right">
+                    <TableHead className="text-right whitespace-nowrap px-2">
                       {t('ranking.trend')}
                     </TableHead>
-                    <TableHead className="text-right font-bold">
+                    <TableHead className="text-right font-bold whitespace-nowrap px-2">
                       {t('ranking.points')}
                     </TableHead>
                   </TableRow>
@@ -627,28 +668,27 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                       onClick={() => goToProfile(item)}
                       className="transition-colors cursor-pointer hover:bg-muted/50"
                     >
-                      <TableCell className="text-center font-bold">
+                      <TableCell className="text-center font-bold px-2 whitespace-nowrap">
                         {item.position}
                       </TableCell>
-                      <TableCell className="py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage
-                              src={item.user.avatar_url ?? undefined}
-                            />
-                            <AvatarFallback>
-                              {getInitials(item.user.name)}
-                            </AvatarFallback>
+                      <TableCell className="py-3 max-w-0 w-full">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 shrink-0">
+                            <AvatarImage src={item.user.avatar_url ?? undefined} />
+                            <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-sm">
-                            {item.user.name}
-                          </span>
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <span className="font-medium text-sm block truncate">{item.user.name}</span>
+                            {item.user.message && (
+                              <MessageBubble message={item.user.message} />
+                            )}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right text-sm">
+                      <TableCell className="text-right text-sm px-2 whitespace-nowrap">
                         {getTrend(item.position, item.previous_position, true)}
                       </TableCell>
-                      <TableCell className="text-right font-bold tabular-nums text-base">
+                      <TableCell className="text-right font-bold tabular-nums text-sm px-2 whitespace-nowrap">
                         {item.points} {t('ranking.pts')}
                       </TableCell>
                     </TableRow>
@@ -657,6 +697,41 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
               </Table>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Message edit modal */}
+      {editingMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
+            <h3 className="font-bold text-lg">Tu mensaje en el grupo 💬</h3>
+            <p className="text-sm text-muted-foreground">Escribí algo gracioso para mostrar en el ranking.</p>
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              maxLength={100}
+              placeholder="Ej: Campeón en construcción 🏆"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveMessage()}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground text-right">{messageInput.length}/100</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setEditingMessage(false)}
+                className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveMessage}
+                disabled={savingMessage}
+                className="px-4 py-2 rounded-lg text-sm bg-primary text-white font-semibold hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingMessage ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

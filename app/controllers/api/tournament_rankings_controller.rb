@@ -31,13 +31,18 @@ class Api::TournamentRankingsController < ApplicationController
       .where(play_group_id: params[:play_group_id])
       .order(:position)
 
+    memberships = PlayGroupMembership
+      .where(play_group_id: params[:play_group_id], user_id: rankings.map { |r| r.user_id })
+      .index_by(&:user_id)
+
     render json: rankings.map { |ranking|
       {
         user: {
           id:         ranking.user.id,
           name:       "#{ranking.user.first_name} #{ranking.user.last_name}",
           email:      ranking.user.email,
-          avatar_url: avatar_url_for(ranking.user)
+          avatar_url: avatar_url_for(ranking.user),
+          message:    memberships[ranking.user_id]&.message
         },
         points:            ranking.points,
         position:          ranking.position,

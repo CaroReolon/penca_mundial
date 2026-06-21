@@ -19,3 +19,8 @@ export async function uploadAvatar(file: File): Promise<string> {
 export async function deleteAvatar(): Promise<void> {
   await api.delete('/api/me/avatar');
 }
+
+export async function updateGroupMessage(groupId: number, message: string): Promise<string> {
+  const response = await api.put(`/api/play_groups/${groupId}/message`, { message });
+  return response.data.message;
+}

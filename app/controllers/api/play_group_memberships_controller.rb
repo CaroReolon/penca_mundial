@@ -23,4 +23,14 @@ class Api::PlayGroupMembershipsController < ApplicationController
     membership.destroy
     render json: { ok: true }
   end
+
+  # PUT /api/play_groups/:id/message
+  def update_message
+    group = PlayGroup.find(params[:id])
+    membership = group.memberships.find_by(user: current_user)
+    return render json: { error: 'Forbidden' }, status: :forbidden unless membership
+
+    membership.update!(message: params[:message].to_s.strip.first(100))
+    render json: { message: membership.message }
+  end
 end
