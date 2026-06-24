@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import UserProfile from './pages/UserProfile';
+import MatchGroupPredictions from './pages/MatchGroupPredictions';
 import AdminPanel from './pages/AdminPanel';
 import InvitePage from './pages/InvitePage';
 import Register from './pages/Register';
@@ -35,6 +36,15 @@ function App() {
           element={
             <ProtectedRoute>
               <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/matches/:matchId/group-predictions"
+          element={
+            <ProtectedRoute>
+              <MatchGroupPredictions />
             </ProtectedRoute>
           }
         />

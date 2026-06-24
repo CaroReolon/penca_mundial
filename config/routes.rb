@@ -24,7 +24,9 @@ Rails.application.routes.draw do
     put    "me/avatar",  to: "avatar#update"
     delete "me/avatar",  to: "avatar#destroy"
 
-    resources :matches, only: [:index]
+    resources :matches, only: [:index] do
+      get :group_predictions, on: :member, to: 'match_group_predictions#index'
+    end
 
     resources :tournaments, only: [:show, :index] do
       resources :tournament_rankings, only: [:show, :index]
