@@ -412,10 +412,91 @@ function CreateGroupModal({
   );
 }
 
+// ─── Highlights carousel ──────────────────────────────────────────
+function HighlightsCarousel({
+  highlights,
+  language,
+}: {
+  highlights: Highlight[];
+  language: string;
+}) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (highlights.length <= 1) return;
+    const id = setInterval(
+      () => setCurrent((i) => (i + 1) % highlights.length),
+      6000
+    );
+    return () => clearInterval(id);
+  }, [highlights.length]);
+
+  const prev = () =>
+    setCurrent((i) => (i - 1 + highlights.length) % highlights.length);
+  const next = () => setCurrent((i) => (i + 1) % highlights.length);
+
+  const h = highlights[current];
+  const title = language === 'en' ? h.title_en ?? h.title : h.title;
+  const desc =
+    language === 'en' ? h.description_en ?? h.description : h.description;
+
+  return (
+    <div className="relative rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 to-amber-50 px-6 py-5 shadow-sm overflow-hidden">
+      {/* Decorative background glow */}
+      <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-yellow-200/40 blur-2xl pointer-events-none" />
+
+      {/* Content */}
+      <div className="flex items-center gap-3 min-h-[64px]">
+        {highlights.length > 1 && (
+          <button
+            onClick={prev}
+            className="shrink-0 text-yellow-500 hover:text-yellow-700 text-lg leading-none transition-colors"
+          >
+            ‹
+          </button>
+        )}
+
+        <div className="flex-1 text-center">
+          <p className="font-bold text-base text-yellow-900 leading-snug">
+            {title}
+          </p>
+          {desc && (
+            <p className="mt-1 text-sm text-yellow-700 leading-snug">{desc}</p>
+          )}
+        </div>
+
+        {highlights.length > 1 && (
+          <button
+            onClick={next}
+            className="shrink-0 text-yellow-500 hover:text-yellow-700 text-lg leading-none transition-colors"
+          >
+            ›
+          </button>
+        )}
+      </div>
+
+      {/* Dot indicators */}
+      {highlights.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-4">
+          {highlights.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`h-1.5 rounded-full transition-all ${
+                i === current ? 'w-4 bg-yellow-500' : 'w-1.5 bg-yellow-300'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────
 export function RankingTab({ ranking: _initialRanking }: Props) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user: me } = useAuth();
 
   const [groups, setGroups] = useState<PlayGroup[]>([]);
@@ -605,27 +686,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         </Card>
       ) : (
         <div className="space-y-6">
-          {/* Highlights banner */}
+          {/* Highlights carousel */}
           {highlights.length > 0 && (
-            <div className="space-y-2">
-              {highlights.map((h) => (
-                <div
-                  key={h.id}
-                  className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 flex flex-col gap-0.5"
-                >
-                  <span className="font-semibold text-sm text-yellow-800">
-                    {language === 'en' ? h.title_en ?? h.title : h.title}
-                  </span>
-                  {(h.description || h.description_en) && (
-                    <span className="text-xs text-yellow-700">
-                      {language === 'en'
-                        ? h.description_en ?? h.description
-                        : h.description}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+            <HighlightsCarousel highlights={highlights} language={language} />
           )}
 
           {/* Podium */}

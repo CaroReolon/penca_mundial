@@ -1,11 +1,11 @@
 module Highlights
   module Calculators
-    class ExactScoreStreak < HighlightCalculator
-      STREAK_THRESHOLD = 2
+    class PointsStreak < HighlightCalculator
+      STREAK_THRESHOLD = 5
 
       def call
         # Hide all stale records first; re-show valid ones below
-        Highlight.where(kind: :exact_score_streak, play_group_id: play_group.id)
+        Highlight.where(kind: :points_streak, play_group_id: play_group.id)
                  .update_all(shown: false)
 
         results = play_group.members.filter_map do |user|
@@ -23,15 +23,15 @@ module Highlights
 
         leaders.each do |r|
           highlight = Highlight.find_or_initialize_by(
-            kind: :exact_score_streak,
+            kind: :points_streak,
             play_group_id: play_group.id,
             user: r[:user]
           )
           highlight.match          = r[:last_match]
-          highlight.title          = "🎯 ¡Racha exacta!"
-          highlight.description    = "#{r[:user].first_name} acertó el marcador exacto en los últimos #{r[:streak]} partidos seguidos."
-          highlight.title_en       = "🎯 Exact Score Streak!"
-          highlight.description_en = "#{r[:user].first_name} nailed the exact score in the last #{r[:streak]} matches in a row."
+          highlight.title          = "🔥 ¡Racha imparable!"
+          highlight.description    = "#{r[:user].first_name} lleva #{r[:streak]} partidos seguidos sumando puntos."
+          highlight.title_en       = "🔥 Unstoppable streak!"
+          highlight.description_en = "#{r[:user].first_name} has scored points in #{r[:streak]} matches in a row."
           highlight.shown          = unique_leader
           highlight.save!
         end
@@ -52,11 +52,11 @@ module Highlights
         streak     = 0
         last_match = nil
 
-        predictions.each do |prediction|
-          break unless prediction.points_awarded == 5
+        predictions.each do |pred|
+          break unless pred.points_awarded.to_i >= 2
 
           streak    += 1
-          last_match = prediction.match if last_match.nil?
+          last_match = pred.match if last_match.nil?
         end
 
         [streak, last_match]
