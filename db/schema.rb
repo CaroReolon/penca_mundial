@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_22_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -72,7 +72,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_22_000000) do
     t.datetime "updated_at", null: false
     t.string "title_en"
     t.text "description_en"
+    t.bigint "play_group_id"
     t.index ["match_id"], name: "index_highlights_on_match_id"
+    t.index ["play_group_id"], name: "index_highlights_on_play_group_id"
     t.index ["user_id"], name: "index_highlights_on_user_id"
   end
 
@@ -215,6 +217,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_22_000000) do
   add_foreign_key "group_teams", "teams"
   add_foreign_key "groups", "tournaments"
   add_foreign_key "highlights", "matches"
+  add_foreign_key "highlights", "play_groups"
   add_foreign_key "highlights", "users"
   add_foreign_key "matches", "groups"
   add_foreign_key "matches", "matches", column: "next_match_id"
