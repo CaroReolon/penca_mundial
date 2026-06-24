@@ -11,8 +11,8 @@ class Highlight < ApplicationRecord
     impossible_match:   4,
     only_exact_scorer:  5,
     points_streak:      6,
-    no_points_streak:   7,
     winner_guesser:     8,
-    only_one_scored:    9
+    only_one_scored:    9,
+    twins:              10
   }
 end

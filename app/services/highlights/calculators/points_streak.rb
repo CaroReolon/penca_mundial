@@ -1,7 +1,7 @@
 module Highlights
   module Calculators
     class PointsStreak < HighlightCalculator
-      STREAK_THRESHOLD = 5
+      STREAK_THRESHOLD = 3
 
       def call
         # Hide all stale records first; re-show valid ones below
