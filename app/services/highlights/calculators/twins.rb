@@ -1,7 +1,7 @@
 module Highlights
   module Calculators
     class Twins < HighlightCalculator
-      MATCH_WINDOW = 5
+      MATCH_WINDOW = 3
 
       def call
         Highlight.where(kind: :twins, play_group_id: play_group.id)
