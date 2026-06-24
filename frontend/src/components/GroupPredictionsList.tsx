@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getMatchGroupPredictions } from '@/services/matchService';
 import { getMyGroups, type PlayGroup } from '@/services/playGroupService';
-import { teamShortName } from '@/lib/localize';
 
 type Member = {
   id: number;
@@ -65,8 +63,6 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
       .finally(() => setLoadingPredictions(false));
   }, [matchId, selectedGroupId]);
 
-  const homeShort = match ? teamShortName(match.home_team, language) : '';
-  const awayShort = match ? teamShortName(match.away_team, language) : '';
 
   const sorted = members
     .slice()

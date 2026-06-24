@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PastMatchCard } from '@/components/PastMatchCard';
 import { MatchFilterBar } from '@/components/MatchFilterBar';
 import { Card } from '@/components/ui/card';
