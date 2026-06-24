@@ -4,12 +4,16 @@ module Highlights
       STREAK_THRESHOLD = 2
 
       def call
+        puts "CALCULATOR: ExactScoreStreak"
         results = play_group.members.filter_map do |user|
           streak, last_match = compute_streak(user)
+          puts user.first_name, streak, last_match&.kickoff_at
           next if streak <= STREAK_THRESHOLD
 
           { user: user, streak: streak, last_match: last_match }
         end
+
+        puts "RESULTS: #{results.map { |r| [r[:user].first_name, r[:streak], r[:last_match]&.kickoff_at] }}"
 
         return if results.empty?
 
@@ -25,6 +29,8 @@ module Highlights
           ).tap do |h|
             h.title       = "🎯 ¡Racha exacta!"
             h.description = "#{r[:user].first_name} acertó el marcador exacto en los últimos #{r[:streak]} partidos seguidos."
+            h.title_en       = "🎯 Exact Score Streak!"
+            h.description_en = "#{r[:user].first_name} nailed the exact score in the last #{r[:streak]} matches in a row."
             h.shown       = unique_leader
             h.save!
           end

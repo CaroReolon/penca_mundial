@@ -31,12 +31,19 @@ import {
 } from '@/services/playGroupService';
 import { updateGroupMessage } from '@/services/userService';
 import { MessageBubble } from '@/components/ui/message-bubble';
+import { getHighlights, type Highlight } from '@/services/highlightService';
 
 type Participant = {
   points: number;
   position: number;
   previous_position: number;
-  user: { id: number; name: string; email: string; avatar_url: string | null; message?: string | null };
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+    message?: string | null;
+  };
 };
 
 type Props = { ranking: Participant[] };
@@ -416,6 +423,7 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
   const [groupsLoaded, setGroupsLoaded] = useState(false);
   const [ranking, setRanking] = useState<Participant[]>([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
 
   const [showCreate, setShowCreate] = useState(false);
   const [panelGroup, setPanelGroup] = useState<PlayGroupDetail | null>(null);
@@ -438,6 +446,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
     getTornamentsRanking(1, selectedGroupId)
       .then(setRanking)
       .finally(() => setLoadingRanking(false));
+    getHighlights(selectedGroupId)
+      .then(setHighlights)
+      .catch(() => {});
   }, [selectedGroupId, groupsLoaded]);
 
   const openPanel = async (g: PlayGroup) => {
@@ -480,7 +491,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
       const saved = await updateGroupMessage(selectedGroupId, messageInput);
       setRanking((prev) =>
         prev.map((r) =>
-          r.user.id === me?.id ? { ...r, user: { ...r.user, message: saved } } : r
+          r.user.id === me?.id
+            ? { ...r, user: { ...r.user, message: saved } }
+            : r
         )
       );
       setEditingMessage(false);
@@ -592,6 +605,29 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         </Card>
       ) : (
         <div className="space-y-6">
+          {/* Highlights banner */}
+          {highlights.length > 0 && (
+            <div className="space-y-2">
+              {highlights.map((h) => (
+                <div
+                  key={h.id}
+                  className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 flex flex-col gap-0.5"
+                >
+                  <span className="font-semibold text-sm text-yellow-800">
+                    {language === 'en' ? h.title_en ?? h.title : h.title}
+                  </span>
+                  {(h.description || h.description_en) && (
+                    <span className="text-xs text-yellow-700">
+                      {language === 'en'
+                        ? h.description_en ?? h.description
+                        : h.description}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Podium */}
           <div className={`grid gap-4 ${getGridCols(topThree.length)}`}>
             {topThree.map((item, index) => {
@@ -622,15 +658,24 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                       </Avatar>
                     </div>
                     <div className="overflow-hidden flex-1">
-                      <p className="font-semibold text-sm truncate">{item.user.name}</p>
-                      <p className="text-xs">{getTrend(item.position, item.previous_position)}</p>
+                      <p className="font-semibold text-sm truncate">
+                        {item.user.name}
+                      </p>
+                      <p className="text-xs">
+                        {getTrend(item.position, item.previous_position)}
+                      </p>
                       {item.user.id === me?.id ? (
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditMessage();
+                          }}
                           className="mt-1 ml-1 text-left w-full"
                         >
                           <MessageBubble
-                            message={item.user.message ?? '✏️ Agregar mensaje...'}
+                            message={
+                              item.user.message ?? '✏️ Agregar mensaje...'
+                            }
                             className="hover:brightness-95"
                           />
                         </button>
@@ -677,18 +722,29 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                       <TableCell className="py-3 max-w-0 w-full">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8 shrink-0">
-                            <AvatarImage src={item.user.avatar_url ?? undefined} />
-                            <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
+                            <AvatarImage
+                              src={item.user.avatar_url ?? undefined}
+                            />
+                            <AvatarFallback>
+                              {getInitials(item.user.name)}
+                            </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1 overflow-hidden">
-                            <span className="font-medium text-sm block truncate">{item.user.name}</span>
+                            <span className="font-medium text-sm block truncate">
+                              {item.user.name}
+                            </span>
                             {item.user.id === me?.id ? (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditMessage();
+                                }}
                                 className="text-left w-full mt-0.5"
                               >
                                 <MessageBubble
-                                  message={item.user.message ?? '✏️ Agregar mensaje...'}
+                                  message={
+                                    item.user.message ?? '✏️ Agregar mensaje...'
+                                  }
                                   className="hover:brightness-95"
                                 />
                               </button>
@@ -718,7 +774,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
             <h3 className="font-bold text-lg">Tu mensaje en el grupo 💬</h3>
-            <p className="text-sm text-muted-foreground">Escribí algo gracioso para mostrar en el ranking.</p>
+            <p className="text-sm text-muted-foreground">
+              Escribí algo gracioso para mostrar en el ranking.
+            </p>
             <input
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               maxLength={100}
@@ -728,7 +786,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
               onKeyDown={(e) => e.key === 'Enter' && handleSaveMessage()}
               autoFocus
             />
-            <p className="text-xs text-muted-foreground text-right">{messageInput.length}/100</p>
+            <p className="text-xs text-muted-foreground text-right">
+              {messageInput.length}/100
+            </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setEditingMessage(false)}

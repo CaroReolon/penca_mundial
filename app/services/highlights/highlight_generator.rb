@@ -2,9 +2,9 @@ module Highlights
   class HighlightGenerator
     CALCULATORS = [
       Calculators::ExactScoreStreak,
-      Calculators::NoPointsStreak,
-      Calculators::OnlyUserScored,
-      Calculators::NobodyScored
+      # Calculators::NoPointsStreak,
+      # Calculators::OnlyUserScored,
+      # Calculators::NobodyScored
     ]
 
     def self.call(play_group:)
