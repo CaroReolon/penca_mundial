@@ -172,20 +172,13 @@ export default function MatchGroupPredictions() {
             {members
               .slice()
               .sort((a, b) => (b.prediction?.points_awarded ?? -1) - (a.prediction?.points_awarded ?? -1))
-              .map((member, index) => {
+              .map((member) => {
                 const pts = member.prediction?.points_awarded ?? null;
-                const medals = ['🥇', '🥈', '🥉'];
-                const isTop = match?.completed && index < 3 && pts !== null && pts > 0;
                 return (
                   <div
                     key={member.id}
-                    className={`flex items-center gap-3 px-4 py-3 ${index === 0 && isTop ? 'bg-primary/5' : ''}`}
+                    className="flex items-center gap-3 px-4 py-3"
                   >
-                    {/* Position */}
-                    <span className="w-6 text-center text-sm font-bold text-muted-foreground shrink-0">
-                      {isTop ? medals[index] : index + 1}
-                    </span>
-
                     {/* Avatar */}
                     <Avatar className="h-8 w-8 shrink-0">
                       {member.avatar_url && <AvatarImage src={member.avatar_url} alt={member.name} />}

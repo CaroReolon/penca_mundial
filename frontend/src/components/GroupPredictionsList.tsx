@@ -34,8 +34,6 @@ const pointsBadge = (pts: number) => {
   return 'bg-gray-100 text-gray-500 border-gray-200';
 };
 
-const medals = ['🥇', '🥈', '🥉'];
-
 export function GroupPredictionsList({ matchId }: { matchId: string | number }) {
   const { language } = useLanguage();
 
@@ -69,6 +67,7 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
     .sort((a, b) => (b.prediction?.points_awarded ?? -1) - (a.prediction?.points_awarded ?? -1));
 
   if (loadingGroups) {
+
     return <div className="py-4 text-center text-sm text-muted-foreground animate-pulse">
       {language === 'es' ? 'Cargando...' : 'Loading...'}
     </div>;
@@ -104,17 +103,13 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
         </div>
       ) : (
         <div className="divide-y rounded-lg border overflow-hidden">
-          {sorted.map((member, index) => {
+          {sorted.map((member) => {
             const pts = member.prediction?.points_awarded ?? null;
-            const isTop = match?.completed && index < 3 && pts !== null && pts > 0;
             return (
               <div
                 key={member.id}
-                className={`flex items-center gap-3 px-3 py-2.5 ${index === 0 && isTop ? 'bg-primary/5' : 'bg-white'}`}
+                className="flex items-center gap-3 px-3 py-2.5 bg-white"
               >
-                <span className="w-5 text-center text-xs font-bold text-muted-foreground shrink-0">
-                  {isTop ? medals[index] : index + 1}
-                </span>
                 <Avatar className="h-7 w-7 shrink-0">
                   {member.avatar_url && <AvatarImage src={member.avatar_url} alt={member.name} />}
                   <AvatarFallback className="text-[10px]">{getInitials(member.name)}</AvatarFallback>
