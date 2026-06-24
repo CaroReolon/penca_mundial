@@ -31,12 +31,19 @@ import {
 } from '@/services/playGroupService';
 import { updateGroupMessage } from '@/services/userService';
 import { MessageBubble } from '@/components/ui/message-bubble';
+import { getHighlights, type Highlight } from '@/services/highlightService';
 
 type Participant = {
   points: number;
   position: number;
   previous_position: number;
-  user: { id: number; name: string; email: string; avatar_url: string | null; message?: string | null };
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+    message?: string | null;
+  };
 };
 
 type Props = { ranking: Participant[] };
@@ -405,10 +412,91 @@ function CreateGroupModal({
   );
 }
 
+// ─── Highlights carousel ──────────────────────────────────────────
+function HighlightsCarousel({
+  highlights,
+  language,
+}: {
+  highlights: Highlight[];
+  language: string;
+}) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (highlights.length <= 1) return;
+    const id = setInterval(
+      () => setCurrent((i) => (i + 1) % highlights.length),
+      6000
+    );
+    return () => clearInterval(id);
+  }, [highlights.length]);
+
+  const prev = () =>
+    setCurrent((i) => (i - 1 + highlights.length) % highlights.length);
+  const next = () => setCurrent((i) => (i + 1) % highlights.length);
+
+  const h = highlights[current];
+  const title = language === 'en' ? h.title_en ?? h.title : h.title;
+  const desc =
+    language === 'en' ? h.description_en ?? h.description : h.description;
+
+  return (
+    <div className="relative rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 to-amber-50 px-6 py-5 shadow-sm overflow-hidden">
+      {/* Decorative background glow */}
+      <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-yellow-200/40 blur-2xl pointer-events-none" />
+
+      {/* Content */}
+      <div className="flex items-center gap-3 min-h-[64px]">
+        {highlights.length > 1 && (
+          <button
+            onClick={prev}
+            className="shrink-0 text-yellow-500 hover:text-yellow-700 text-lg leading-none transition-colors"
+          >
+            ‹
+          </button>
+        )}
+
+        <div className="flex-1 text-center">
+          <p className="font-bold text-base text-yellow-900 leading-snug">
+            {title}
+          </p>
+          {desc && (
+            <p className="mt-1 text-sm text-yellow-700 leading-snug">{desc}</p>
+          )}
+        </div>
+
+        {highlights.length > 1 && (
+          <button
+            onClick={next}
+            className="shrink-0 text-yellow-500 hover:text-yellow-700 text-lg leading-none transition-colors"
+          >
+            ›
+          </button>
+        )}
+      </div>
+
+      {/* Dot indicators */}
+      {highlights.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-4">
+          {highlights.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`h-1.5 rounded-full transition-all ${
+                i === current ? 'w-4 bg-yellow-500' : 'w-1.5 bg-yellow-300'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────
 export function RankingTab({ ranking: _initialRanking }: Props) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user: me } = useAuth();
 
   const [groups, setGroups] = useState<PlayGroup[]>([]);
@@ -416,6 +504,7 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
   const [groupsLoaded, setGroupsLoaded] = useState(false);
   const [ranking, setRanking] = useState<Participant[]>([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
 
   const [showCreate, setShowCreate] = useState(false);
   const [panelGroup, setPanelGroup] = useState<PlayGroupDetail | null>(null);
@@ -438,6 +527,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
     getTornamentsRanking(1, selectedGroupId)
       .then(setRanking)
       .finally(() => setLoadingRanking(false));
+    getHighlights(selectedGroupId)
+      .then(setHighlights)
+      .catch(() => {});
   }, [selectedGroupId, groupsLoaded]);
 
   const openPanel = async (g: PlayGroup) => {
@@ -480,7 +572,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
       const saved = await updateGroupMessage(selectedGroupId, messageInput);
       setRanking((prev) =>
         prev.map((r) =>
-          r.user.id === me?.id ? { ...r, user: { ...r.user, message: saved } } : r
+          r.user.id === me?.id
+            ? { ...r, user: { ...r.user, message: saved } }
+            : r
         )
       );
       setEditingMessage(false);
@@ -592,6 +686,11 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         </Card>
       ) : (
         <div className="space-y-6">
+          {/* Highlights carousel */}
+          {highlights.length > 0 && (
+            <HighlightsCarousel highlights={highlights} language={language} />
+          )}
+
           {/* Podium */}
           <div className={`grid gap-4 ${getGridCols(topThree.length)}`}>
             {topThree.map((item, index) => {
@@ -622,15 +721,24 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                       </Avatar>
                     </div>
                     <div className="overflow-hidden flex-1">
-                      <p className="font-semibold text-sm truncate">{item.user.name}</p>
-                      <p className="text-xs">{getTrend(item.position, item.previous_position)}</p>
+                      <p className="font-semibold text-sm truncate">
+                        {item.user.name}
+                      </p>
+                      <p className="text-xs">
+                        {getTrend(item.position, item.previous_position)}
+                      </p>
                       {item.user.id === me?.id ? (
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditMessage();
+                          }}
                           className="mt-1 ml-1 text-left w-full"
                         >
                           <MessageBubble
-                            message={item.user.message ?? '✏️ Agregar mensaje...'}
+                            message={
+                              item.user.message ?? '✏️ Agregar mensaje...'
+                            }
                             className="hover:brightness-95"
                           />
                         </button>
@@ -677,18 +785,29 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
                       <TableCell className="py-3 max-w-0 w-full">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8 shrink-0">
-                            <AvatarImage src={item.user.avatar_url ?? undefined} />
-                            <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
+                            <AvatarImage
+                              src={item.user.avatar_url ?? undefined}
+                            />
+                            <AvatarFallback>
+                              {getInitials(item.user.name)}
+                            </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1 overflow-hidden">
-                            <span className="font-medium text-sm block truncate">{item.user.name}</span>
+                            <span className="font-medium text-sm block truncate">
+                              {item.user.name}
+                            </span>
                             {item.user.id === me?.id ? (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleEditMessage(); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditMessage();
+                                }}
                                 className="text-left w-full mt-0.5"
                               >
                                 <MessageBubble
-                                  message={item.user.message ?? '✏️ Agregar mensaje...'}
+                                  message={
+                                    item.user.message ?? '✏️ Agregar mensaje...'
+                                  }
                                   className="hover:brightness-95"
                                 />
                               </button>
@@ -718,7 +837,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
             <h3 className="font-bold text-lg">Tu mensaje en el grupo 💬</h3>
-            <p className="text-sm text-muted-foreground">Escribí algo gracioso para mostrar en el ranking.</p>
+            <p className="text-sm text-muted-foreground">
+              Escribí algo gracioso para mostrar en el ranking.
+            </p>
             <input
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               maxLength={100}
@@ -728,7 +849,9 @@ export function RankingTab({ ranking: _initialRanking }: Props) {
               onKeyDown={(e) => e.key === 'Enter' && handleSaveMessage()}
               autoFocus
             />
-            <p className="text-xs text-muted-foreground text-right">{messageInput.length}/100</p>
+            <p className="text-xs text-muted-foreground text-right">
+              {messageInput.length}/100
+            </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setEditingMessage(false)}

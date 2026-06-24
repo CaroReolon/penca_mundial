@@ -37,6 +37,7 @@ Rails.application.routes.draw do
     get 'users/:user_id/matches', to: 'user_matches#index'
 
     resources :play_groups, only: [:index, :create, :show, :destroy] do
+      resources :highlights, only: [:index]
       resources :invitations, only: [:create, :destroy],
                               controller: 'play_group_invitations'
       delete 'leave',            to: 'invitations#leave',              on: :member

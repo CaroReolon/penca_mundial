@@ -4,7 +4,7 @@ users = [
     last_name: "Doe",
     email: "joe.doe@example.com",
     password: "Hola_123",
-    admin: "true"
+    admin: true
   }
 ]
 
@@ -15,6 +15,7 @@ users.each do |data|
   user.last_name = data[:last_name]
   user.password = data[:password]
   user.password_confirmation = data[:password]
+  user.admin = data[:admin]
 
   user.save!
 end
