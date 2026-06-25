@@ -51,7 +51,8 @@ module Highlights
         highlight.title          = "🚨 Última llamada"
         highlight.description    = "#{user.first_name} hizo un último cambio #{mins} minuto#{'s' if mins != 1} antes del inicio de #{match.home_team&.name} vs #{match.away_team&.name}."
         highlight.title_en       = "🚨 Last call"
-        highlight.description_en = "#{user.first_name} made one final change #{mins} minute#{'s' if mins != 1} before kick-off in #{match.home_team&.name} vs #{match.away_team&.name}."  highlight.shown          = true
+        highlight.description_en = "#{user.first_name} made one final change #{mins} minute#{'s' if mins != 1} before kick-off in #{match.home_team&.name} vs #{match.away_team&.name}."  
+        highlight.shown          = true
         highlight.save!
       end
     end
