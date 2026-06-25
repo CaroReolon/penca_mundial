@@ -18,7 +18,7 @@ module Highlights
 
         return if all_match_days.empty?
 
-        by_day = all_match_days.group_by { |_, kickoff, _| kickoff.utc.to_date }
+        by_day = all_match_days.group_by { |_, kickoff, _| kickoff.in_time_zone("America/New_York").to_date }
 
         last_complete_day = by_day.keys.sort.reverse.find do |date|
           by_day[date].all? { |_, _, completed| completed }
