@@ -14,6 +14,7 @@ class Highlight < ApplicationRecord
     winner_guesser:     8,
     only_one_scored:    9,
     twins:              10,
-    last_minute:        11
+    last_minute:        11,
+    player_of_the_day:  12
   }
 end

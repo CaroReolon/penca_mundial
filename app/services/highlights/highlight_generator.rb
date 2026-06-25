@@ -9,7 +9,8 @@ module Highlights
       Calculators::WinnerGuesser,
       Calculators::OnlyOneScored,
       Calculators::Twins,
-      Calculators::LastMinute
+      Calculators::LastMinute,
+      Calculators::PlayerOfTheDay
     ]
 
     def self.call(play_group:)
