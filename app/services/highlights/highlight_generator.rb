@@ -8,7 +8,8 @@ module Highlights
       Calculators::NoPointsStreak,
       Calculators::WinnerGuesser,
       Calculators::OnlyOneScored,
-      Calculators::Twins
+      Calculators::Twins,
+      Calculators::LastMinute
     ]
 
     def self.call(play_group:)

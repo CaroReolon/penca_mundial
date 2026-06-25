@@ -13,6 +13,7 @@ class Highlight < ApplicationRecord
     points_streak:      6,
     winner_guesser:     8,
     only_one_scored:    9,
-    twins:              10
+    twins:              10,
+    last_minute:        11
   }
 end
