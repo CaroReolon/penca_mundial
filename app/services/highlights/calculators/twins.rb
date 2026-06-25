@@ -11,11 +11,7 @@ module Highlights
         return if member_ids.size < 2
 
         recent_match_ids = Match
-          .where(
-            id: Prediction.where(user_id: member_ids).select(:match_id),
-            tournament_id: play_group.tournament_id,
-            completed: true
-          )
+          .where(tournament_id: play_group.tournament_id, completed: true)
           .order(kickoff_at: :desc)
           .limit(MATCH_WINDOW)
           .pluck(:id)
