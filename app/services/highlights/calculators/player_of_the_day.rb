@@ -49,10 +49,9 @@ module Highlights
         highlight.user           = user
         highlight.match          = nil
         highlight.title          = "🌟 Jugador del día"
-        highlight.description    = "#{user.first_name} se levantó inspirado ayer y arrasó con #{top_points} pts en #{matches_count} partido#{'s' if matches_count != 1}."
-
+        highlight.description    = "#{user.first_name} dio clase ayer de cómo se juega: #{top_points} pts en #{matches_count} partidos."
         highlight.title_en       = "🌟 Player of the day"
-        highlight.description_en = "#{user.first_name} woke up inspired yesterday and crushed it with #{top_points} pts across #{matches_count} match#{'es' if matches_count != 1}."
+        highlight.description_en = "#{user.first_name} showed everyone how it's done yesterday: #{top_points} pts across #{matches_count} match#{'es' if matches_count != 1}."
         highlight.shown          = true
         highlight.save!
       end
