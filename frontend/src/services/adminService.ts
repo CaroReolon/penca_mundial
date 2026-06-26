@@ -60,3 +60,7 @@ export async function adminUpdateMatch(
   const res = await api.patch(`/api/admin/matches/${id}`, { match: data });
   return res.data;
 }
+
+export async function adminRunHighlights(): Promise<void> {
+  await api.post('/api/admin/run_highlights');
+}
