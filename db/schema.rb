@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_26_024641) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -95,10 +95,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
     t.datetime "updated_at", null: false
     t.string "stadium"
     t.string "stadium_en"
+    t.boolean "went_to_penalties", default: false, null: false
+    t.bigint "penalty_winner_team_id"
     t.index ["away_team_id"], name: "index_matches_on_away_team_id"
     t.index ["group_id"], name: "index_matches_on_group_id"
     t.index ["home_team_id"], name: "index_matches_on_home_team_id"
     t.index ["next_match_id"], name: "index_matches_on_next_match_id"
+    t.index ["penalty_winner_team_id"], name: "index_matches_on_penalty_winner_team_id"
     t.index ["tournament_id"], name: "index_matches_on_tournament_id"
     t.index ["winner_team_id"], name: "index_matches_on_winner_team_id"
   end
@@ -145,7 +148,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
     t.integer "points_awarded", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "penalty_winner_team_id"
     t.index ["match_id"], name: "index_predictions_on_match_id"
+    t.index ["penalty_winner_team_id"], name: "index_predictions_on_penalty_winner_team_id"
     t.index ["user_id", "match_id"], name: "index_predictions_on_user_id_and_match_id", unique: true
     t.index ["user_id"], name: "index_predictions_on_user_id"
   end
@@ -211,6 +216,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "versions", force: :cascade do |t|
+    t.string "whodunnit"
+    t.datetime "created_at"
+    t.bigint "item_id", null: false
+    t.string "item_type", null: false
+    t.string "event", null: false
+    t.text "object"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "group_teams", "groups"
@@ -223,12 +238,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_23_000000) do
   add_foreign_key "matches", "matches", column: "next_match_id"
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
+  add_foreign_key "matches", "teams", column: "penalty_winner_team_id"
   add_foreign_key "matches", "teams", column: "winner_team_id"
   add_foreign_key "matches", "tournaments"
   add_foreign_key "play_group_invitations", "play_groups"
   add_foreign_key "play_group_memberships", "play_groups"
   add_foreign_key "play_group_memberships", "users"
   add_foreign_key "predictions", "matches"
+  add_foreign_key "predictions", "teams", column: "penalty_winner_team_id"
   add_foreign_key "predictions", "users"
   add_foreign_key "tournament_teams", "teams"
   add_foreign_key "tournament_teams", "tournaments"
