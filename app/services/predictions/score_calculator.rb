@@ -8,15 +8,17 @@ module Predictions
     def call
       return 0 unless @match.home_score.present? && @match.away_score.present?
 
-      if exact_score?
-        5
-      elsif goal_difference_matches?
-        3
-      elsif winner_matches?
-        2
-      else
-        0
-      end
+      base = if exact_score?
+               5
+             elsif goal_difference_matches?
+               3
+             elsif winner_matches?
+               2
+             else
+               0
+             end
+
+      base + penalty_bonus
     end
 
     private
@@ -63,6 +65,14 @@ module Predictions
       return :away if away > home
 
       :draw
+    end
+
+    def penalty_bonus
+      return 0 unless match.went_to_penalties?
+      return 0 unless match.penalty_winner_team_id.present?
+      return 0 unless prediction.penalty_winner_team_id.present?
+
+      prediction.penalty_winner_team_id == match.penalty_winner_team_id ? 2 : 0
     end
   end
 end

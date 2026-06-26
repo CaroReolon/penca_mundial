@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 import type { Match } from '@/types/match';
+import { isKnockoutStage } from '@/types/match';
 import { predictionService } from '@/services/predictionService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { teamName, teamShortName, stadiumName, formatKickoff } from '@/lib/localize';
@@ -21,14 +22,23 @@ export function MatchCard({ match }: Props) {
   const [awayScore, setAwayScore] = useState<number | null>(
     match.prediction?.away_score ?? null
   );
+  const [penaltyWinner, setPenaltyWinner] = useState<number | null>(
+    match.prediction?.penalty_winner_team_id ?? null
+  );
 
   const { language, t } = useLanguage();
 
+  const isKnockout = isKnockoutStage(match.stage);
+  const showPenaltyPicker = isKnockout;
+
+  const savedPenaltyWinner = prediction?.penalty_winner_team_id ?? null;
   const hasChanges =
     homeScore !== prediction?.home_score ||
-    awayScore !== prediction?.away_score;
+    awayScore !== prediction?.away_score ||
+    (showPenaltyPicker && penaltyWinner !== savedPenaltyWinner);
 
-  const canSave = homeScore !== null && awayScore !== null && hasChanges;
+  const canSave = homeScore !== null && awayScore !== null && hasChanges &&
+    (!showPenaltyPicker || penaltyWinner !== null);
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -37,22 +47,26 @@ export function MatchCard({ match }: Props) {
       setSaving(true);
 
       let savedPrediction;
+      const pw = showPenaltyPicker ? penaltyWinner : null;
 
       if (prediction) {
         savedPrediction = await predictionService.update(
           prediction.id,
           homeScore,
-          awayScore
+          awayScore,
+          pw
         );
       } else {
         savedPrediction = await predictionService.create(
           match.id,
           homeScore,
-          awayScore
+          awayScore,
+          pw
         );
       }
 
       setPrediction(savedPrediction);
+      setPenaltyWinner(savedPrediction.penalty_winner_team_id ?? null);
     } catch (error) {
       console.error('Error saving prediction', error);
     } finally {
@@ -178,6 +192,40 @@ export function MatchCard({ match }: Props) {
             </div>
           </div>
         </div>
+
+        {showPenaltyPicker && (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="mb-2 text-center text-xs font-semibold text-amber-800">
+              🥅 {language === 'en' ? 'Who wins on penalties?' : '¿Quién gana en penales?'}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPenaltyWinner(match.home_team.id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md border py-1.5 text-sm font-medium transition-all ${
+                  penaltyWinner === match.home_team.id
+                    ? 'border-amber-500 bg-amber-500 text-white'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-amber-300'
+                }`}
+              >
+                <span>{match.home_team.flag}</span>
+                <span>{teamShortName(match.home_team, language)}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPenaltyWinner(match.away_team.id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md border py-1.5 text-sm font-medium transition-all ${
+                  penaltyWinner === match.away_team.id
+                    ? 'border-amber-500 bg-amber-500 text-white'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-amber-300'
+                }`}
+              >
+                <span>{match.away_team.flag}</span>
+                <span>{teamShortName(match.away_team, language)}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-5 flex items-center justify-center gap-1 text-[11px] text-muted-foreground/80">
           <span>📍</span>

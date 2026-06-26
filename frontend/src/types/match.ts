@@ -26,6 +26,11 @@ export interface Match {
   stadium_en?: string;
   home_team: Team;
   away_team: Team;
+  home_score?: number;
+  away_score?: number;
+  completed?: boolean;
+  went_to_penalties?: boolean;
+  penalty_winner_team_id?: number | null;
   prediction: {
     id: number;
     home_score: number;
@@ -33,5 +38,10 @@ export interface Match {
     user_id: number;
     match_id: number;
     points_awarded?: number;
+    penalty_winner_team_id?: number | null;
   } | null;
+}
+
+export function isKnockoutStage(stage: MatchStage): boolean {
+  return stage !== 'group_stage';
 }

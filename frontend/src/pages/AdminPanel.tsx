@@ -85,8 +85,17 @@ function ResultRow({
     String(match.away_team?.id ?? '')
   );
   const [completed, setCompleted] = useState(match.completed);
+  const [wentToPenalties, setWentToPenalties] = useState(match.went_to_penalties ?? false);
+  const [penaltyWinnerId, setPenaltyWinnerId] = useState(String(match.penalty_winner_team_id ?? ''));
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [editingKickoff, setEditingKickoff] = useState(false);
+  const toLocalInput = (iso: string) => {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const [kickoffInput, setKickoffInput] = useState(toLocalInput(match.kickoff_at));
 
   const mark = () => setDirty(true);
 
@@ -99,9 +108,13 @@ function ResultRow({
         completed,
         home_team_id: homeTeamId ? Number(homeTeamId) : undefined,
         away_team_id: awayTeamId ? Number(awayTeamId) : undefined,
+        kickoff_at: new Date(kickoffInput).toISOString(),
+        went_to_penalties: wentToPenalties,
+        penalty_winner_team_id: penaltyWinnerId ? Number(penaltyWinnerId) : null,
       });
       onSaved(updated);
       setDirty(false);
+      setEditingKickoff(false);
     } finally {
       setSaving(false);
     }
@@ -128,7 +141,24 @@ function ResultRow({
             {STAGE_LABELS[match.stage] ?? match.stage}
             {match.group ? ` · Grupo ${match.group}` : ''}
           </Badge>
-          <span className="text-xs text-gray-400">{kickoff}</span>
+          {editingKickoff ? (
+            <input
+              type="datetime-local"
+              value={kickoffInput}
+              onChange={(e) => { setKickoffInput(e.target.value); mark(); }}
+              onBlur={() => setEditingKickoff(false)}
+              autoFocus
+              className="text-xs border rounded px-1 py-0.5"
+            />
+          ) : (
+            <span
+              className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 hover:underline"
+              onClick={() => setEditingKickoff(true)}
+              title="Click to edit kickoff time"
+            >
+              {kickoff} ✏️
+            </span>
+          )}
           {match.stadium && (
             <span className="text-xs text-gray-400">📍 {match.stadium}</span>
           )}
@@ -206,6 +236,34 @@ function ResultRow({
             Finalizado
           </label>
         </div>
+
+        {KNOCKOUT_STAGES.includes(match.stage) && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                className="accent-amber-500"
+                checked={wentToPenalties}
+                onChange={(e) => { setWentToPenalties(e.target.checked); mark(); }}
+              />
+              Fue a penales
+            </label>
+            {wentToPenalties && (
+              <select
+                className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                value={penaltyWinnerId}
+                onChange={(e) => { setPenaltyWinnerId(e.target.value); mark(); }}
+              >
+                <option value="">— Ganador penales —</option>
+                {[match.home_team, match.away_team].filter(Boolean).map((t) => (
+                  <option key={t!.id} value={String(t!.id)}>
+                    {t!.flag} {t!.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
       </div>
 
       <Button
