@@ -12,7 +12,6 @@ module Highlights
         # Group matches by date and walk backwards until we find a fully-done day.
         all_match_days = Match
           .where(tournament_id: play_group.tournament_id)
-          .where('kickoff_at <= ?', Time.current)
           .order(kickoff_at: :desc)
           .pluck(:id, :kickoff_at, :completed)
 
@@ -25,6 +24,18 @@ module Highlights
         end
 
         return unless last_complete_day
+
+        # If last complete day is today, suppress until ALL of today's matches are done
+        today_et = Time.current.in_time_zone("America/New_York").to_date
+        if last_complete_day == today_et
+          today_start = today_et.in_time_zone("America/New_York").beginning_of_day
+          today_end   = today_et.in_time_zone("America/New_York").end_of_day
+          has_incomplete_today = Match
+            .where(tournament_id: play_group.tournament_id, completed: false)
+            .where(kickoff_at: today_start..today_end)
+            .exists?
+          return if has_incomplete_today
+        end
 
         match_ids_that_day = by_day[last_complete_day].map { |id, _, _| id }
 
