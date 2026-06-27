@@ -7,6 +7,7 @@ gem "rails", "~> 7.1.6"
 
 # Loads .env file into ENV in development
 gem "dotenv-rails", groups: [:development, :test]
+gem "paper_trail"
 
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"

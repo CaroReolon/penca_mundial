@@ -51,6 +51,7 @@ Rails.application.routes.draw do
     namespace :admin do
       resources :matches, only: [:index, :create, :update]
       resources :teams,   only: [:index]
+      post 'run_highlights', to: 'highlights#run'
     end
   end
 

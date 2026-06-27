@@ -1,4 +1,6 @@
 class Prediction < ApplicationRecord
+  has_paper_trail
+
   belongs_to :user
   belongs_to :match
   belongs_to :penalty_winner_team, class_name: "Team", optional: true

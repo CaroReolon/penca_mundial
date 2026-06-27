@@ -13,6 +13,7 @@ import {
   adminGetTeams,
   adminCreateMatch,
   adminUpdateMatch,
+  adminRunHighlights,
   type AdminMatch,
   type AdminTeam,
 } from '@/services/adminService';
@@ -414,6 +415,22 @@ export default function AdminPanel() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [teams, setTeams] = useState<AdminTeam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [runningHighlights, setRunningHighlights] = useState(false);
+  const [highlightMsg, setHighlightMsg] = useState<string | null>(null);
+
+  const handleRunHighlights = async () => {
+    setRunningHighlights(true);
+    setHighlightMsg(null);
+    try {
+      await adminRunHighlights();
+      setHighlightMsg('✅ Job enqueued');
+    } catch {
+      setHighlightMsg('❌ Error');
+    } finally {
+      setRunningHighlights(false);
+      setTimeout(() => setHighlightMsg(null), 3000);
+    }
+  };
 
   useEffect(() => {
     if (!user?.admin) {
@@ -463,7 +480,21 @@ export default function AdminPanel() {
               Gestión de partidos y resultados
             </p>
           </div>
-          <SideBarProfile />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {highlightMsg && <span className="text-sm">{highlightMsg}</span>}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRunHighlights}
+                disabled={runningHighlights}
+                className="text-xs"
+              >
+                {runningHighlights ? '⏳ Running...' : '✨ Run Highlights'}
+              </Button>
+            </div>
+            <SideBarProfile />
+          </div>
         </header>
 
         {loading ? (
