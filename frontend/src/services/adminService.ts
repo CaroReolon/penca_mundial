@@ -12,6 +12,8 @@ export interface AdminMatch {
   home_score: number | null;
   away_score: number | null;
   completed: boolean;
+  went_to_penalties: boolean;
+  penalty_winner_team_id: number | null;
 }
 
 export interface AdminTeam {
@@ -55,6 +57,8 @@ export async function adminUpdateMatch(
     kickoff_at: string;
     stadium: string;
     stadium_en: string;
+    went_to_penalties: boolean;
+    penalty_winner_team_id: number | null;
   }>
 ): Promise<AdminMatch> {
   const res = await api.patch(`/api/admin/matches/${id}`, { match: data });

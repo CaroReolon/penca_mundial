@@ -54,23 +54,26 @@ class Api::Admin::MatchesController < ApplicationController
       :home_team_id, :away_team_id,
       :home_score, :away_score,
       :completed, :kickoff_at,
-      :stadium, :stadium_en
+      :stadium, :stadium_en,
+      :went_to_penalties, :penalty_winner_team_id
     )
   end
 
   def serialize(match)
     {
-      id:            match.id,
-      stage:         match.stage,
-      kickoff_at:    match.kickoff_at,
-      stadium:       match.stadium,
-      stadium_en:    match.stadium_en,
-      group:         match.group&.name,
-      home_team:     serialize_team(match.home_team),
-      away_team:     serialize_team(match.away_team),
-      home_score:    match.home_score,
-      away_score:    match.away_score,
-      completed:     match.completed
+      id:                     match.id,
+      stage:                  match.stage,
+      kickoff_at:             match.kickoff_at,
+      stadium:                match.stadium,
+      stadium_en:             match.stadium_en,
+      group:                  match.group&.name,
+      home_team:              serialize_team(match.home_team),
+      away_team:              serialize_team(match.away_team),
+      home_score:             match.home_score,
+      away_score:             match.away_score,
+      completed:              match.completed,
+      went_to_penalties:      match.went_to_penalties,
+      penalty_winner_team_id: match.penalty_winner_team_id
     }
   end
 

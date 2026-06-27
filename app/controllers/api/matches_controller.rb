@@ -36,10 +36,13 @@ class Api::MatchesController < ApplicationController
         away_score: match.away_score,
         completed:  match.completed,
 
+        went_to_penalties:      match.went_to_penalties,
+        penalty_winner_team_id: match.penalty_winner_team_id,
+
         prediction: current_user
           .predictions
           .find_by(match_id: match.id)
-          &.slice(:id, :home_score, :away_score, :points_awarded)
+          &.slice(:id, :home_score, :away_score, :points_awarded, :penalty_winner_team_id)
       }
     }
   end

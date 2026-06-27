@@ -15,11 +15,14 @@ type PastMatch = {
   home_score: number | null;
   away_score: number | null;
   completed: boolean;
+  went_to_penalties?: boolean;
+  penalty_winner_team_id?: number | null;
   prediction: {
     id: string;
     away_score: number;
     home_score: number;
     points_awarded: number;
+    penalty_winner_team_id?: number | null;
   } | null;
 };
 
@@ -72,6 +75,11 @@ export function PastMatchCard({ match, predictionLabel }: Props) {
 
   const label  = predictionLabel ?? t('past.myPrediction');
   const points = match.prediction?.points_awarded ?? null;
+  const isKnockout = match.stage !== 'group_stage';
+  const wentToPenalties = match.went_to_penalties ?? false;
+  const matchPenaltyWinner = match.penalty_winner_team_id;
+  const userPenaltyWinner = match.prediction?.penalty_winner_team_id ?? null;
+  const penaltyCorrect = wentToPenalties && matchPenaltyWinner != null && userPenaltyWinner === matchPenaltyWinner;
   const status = getMatchStatus(match.kickoff_at, match.completed);
   const styles = STATUS_STYLES[status];
 
@@ -195,6 +203,54 @@ export function PastMatchCard({ match, predictionLabel }: Props) {
       ) : (
         <div className="mt-5 rounded-lg p-2 text-center text-xs bg-muted/40">
           <span className="text-muted-foreground">{t('past.noPrediction')}</span>
+        </div>
+      )}
+
+      {/* PENALTY SECTION — shown for all knockout matches */}
+      {isKnockout && match.prediction && (
+        <div className={`mt-2 rounded-lg border p-2 text-xs ${wentToPenalties ? (penaltyCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50') : 'border-gray-100 bg-gray-50 opacity-50'}`}>
+          <span className={`block mb-1.5 text-center font-medium ${wentToPenalties ? (penaltyCorrect ? 'text-green-700' : 'text-red-600') : 'text-gray-400'}`}>
+            🥅 {language === 'en' ? 'Penalty winner prediction' : 'Predicción penales'}
+            {!wentToPenalties && (
+              <span className="ml-1 font-normal">
+                ({language === 'en' ? 'not needed' : 'no hubo penales'})
+              </span>
+            )}
+          </span>
+          <div className="flex items-center justify-center gap-3">
+            {/* User prediction */}
+            {userPenaltyWinner != null ? (() => {
+              const team = userPenaltyWinner === match.home_team.id ? match.home_team : match.away_team;
+              return (
+                <div className={`flex items-center gap-1 rounded border px-2 py-0.5 font-semibold ${wentToPenalties ? (penaltyCorrect ? 'border-green-300 bg-green-100 text-green-900' : 'border-red-200 bg-red-100 text-red-700') : 'border-gray-200 bg-white text-gray-400'}`}>
+                  <span>{team.flag}</span>
+                  <span>{teamShortName(team, language)}</span>
+                </div>
+              );
+            })() : (
+              <span className="text-gray-400 italic">
+                {language === 'en' ? 'No pick' : 'Sin elección'}
+              </span>
+            )}
+
+            {/* Arrow + actual result (only if match went to penalties) */}
+            {wentToPenalties && matchPenaltyWinner != null && (() => {
+              const winner = matchPenaltyWinner === match.home_team.id ? match.home_team : match.away_team;
+              return (
+                <>
+                  <span className="text-gray-300">→</span>
+                  <div className="flex items-center gap-1 rounded border border-gray-300 bg-white px-2 py-0.5 font-semibold text-gray-700">
+                    <span>{winner.flag}</span>
+                    <span>{teamShortName(winner, language)}</span>
+                    <span className="ml-1 text-[10px] text-gray-400">
+                      {language === 'en' ? 'won' : 'ganó'}
+                    </span>
+                  </div>
+                  {penaltyCorrect && <span className="text-green-600 font-bold">+2</span>}
+                </>
+              );
+            })()}
+          </div>
         </div>
       )}
 

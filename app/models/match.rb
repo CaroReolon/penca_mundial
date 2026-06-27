@@ -14,6 +14,10 @@ class Match < ApplicationRecord
              class_name: "Team",
              optional: true
 
+  belongs_to :penalty_winner_team,
+             class_name: "Team",
+             optional: true
+
   belongs_to :next_match,
              class_name: "Match",
              optional: true
@@ -50,7 +54,9 @@ class Match < ApplicationRecord
 
   def update_predictions_scores
     return unless previous_changes.key?("home_score") ||
-                  previous_changes.key?("away_score")
+                  previous_changes.key?("away_score") ||
+                  previous_changes.key?("went_to_penalties") ||
+                  previous_changes.key?("penalty_winner_team_id")
 
     UpdateMatchPredictionsJob.perform_later(id)
   end

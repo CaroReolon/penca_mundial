@@ -14,15 +14,17 @@ class Api::MatchGroupPredictionsController < ApplicationController
 
     render json: {
       match: {
-        id:         match.id,
-        home_team:  serialize_team(match.home_team),
-        away_team:  serialize_team(match.away_team),
-        home_score: match.home_score,
-        away_score: match.away_score,
-        completed:  match.completed,
-        kickoff_at: match.kickoff_at,
-        stage:      match.stage,
-        group:      match.group&.name
+        id:                     match.id,
+        home_team:              serialize_team(match.home_team),
+        away_team:              serialize_team(match.away_team),
+        home_score:             match.home_score,
+        away_score:             match.away_score,
+        completed:              match.completed,
+        kickoff_at:             match.kickoff_at,
+        stage:                  match.stage,
+        group:                  match.group&.name,
+        went_to_penalties:      match.went_to_penalties,
+        penalty_winner_team_id: match.penalty_winner_team_id
       },
       members: members.map do |user|
         pred = predictions_by_user[user.id]
@@ -31,9 +33,10 @@ class Api::MatchGroupPredictionsController < ApplicationController
           name:       "#{user.first_name} #{user.last_name}",
           avatar_url: avatar_url_for(user),
           prediction: pred ? {
-            home_score:     pred.home_score,
-            away_score:     pred.away_score,
-            points_awarded: pred.points_awarded
+            home_score:             pred.home_score,
+            away_score:             pred.away_score,
+            points_awarded:         pred.points_awarded,
+            penalty_winner_team_id: pred.penalty_winner_team_id
           } : nil
         }
       end

@@ -5,7 +5,7 @@ class UpdateMatchPredictionsJob < ApplicationJob
     match = Match.find(match_id)
 
     match.predictions.find_each do |prediction|
-      prediction.update!(
+      prediction.update_columns(
         points_awarded: Predictions::ScoreCalculator.new(prediction).call
       )
     end

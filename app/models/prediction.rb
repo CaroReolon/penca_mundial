@@ -3,6 +3,7 @@ class Prediction < ApplicationRecord
 
   belongs_to :user
   belongs_to :match
+  belongs_to :penalty_winner_team, class_name: "Team", optional: true
 
   validates :home_score, numericality: {
     greater_than_or_equal_to: 0
@@ -17,12 +18,7 @@ class Prediction < ApplicationRecord
   after_create :ensure_ranking
   
   def recalculate_points!
-    update!(
-      points_awarded:
-        Predictions::ScoreCalculator
-          .new(self)
-          .call
-    )
+    update_columns(points_awarded: Predictions::ScoreCalculator.new(self).call)
   end
 
   private
