@@ -20,20 +20,32 @@ module Highlights
         leaders = results.select { |r| r[:streak] == longest }
         unique_leader = leaders.size == 1
 
-        leaders.each do |r|
-          highlight = Highlight.find_or_initialize_by(
-            kind: :no_points_streak,
-            play_group_id: play_group.id,
-            user: r[:user]
-          )
+        highlight = Highlight.find_or_initialize_by(
+          kind: :no_points_streak,
+          play_group_id: play_group.id
+        )
+
+        if unique_leader
+          r = leaders.first
+          highlight.user           = r[:user]
           highlight.match          = r[:last_match]
           highlight.title          = "🚑 Que alguien lo ayude"
           highlight.description    = "#{r[:user].first_name} ya lleva #{r[:streak]} partidos seguidos sin sumar puntos."
           highlight.title_en       = "🚑 Send help!"
           highlight.description_en = "#{r[:user].first_name} has now gone #{r[:streak]} matches in a row without scoring a single point."
-          highlight.shown          = unique_leader
-          highlight.save!
+        else
+          names    = leaders.map { |r| r[:user].first_name }.join(" y ")
+          names_en = leaders.map { |r| r[:user].first_name }.join(" and ")
+          highlight.user           = nil
+          highlight.match          = leaders.first[:last_match]
+          highlight.title          = "🚑 Que alguien los ayude"
+          highlight.description    = "#{names} llevan #{longest} partidos seguidos sin sumar puntos."
+          highlight.title_en       = "🚑 Send help!"
+          highlight.description_en = "#{names_en} have both gone #{longest} matches in a row without scoring a single point."
         end
+
+        highlight.shown = true
+        highlight.save!
       end
 
       private
