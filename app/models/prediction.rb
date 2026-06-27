@@ -16,12 +16,7 @@ class Prediction < ApplicationRecord
   after_create :ensure_ranking
   
   def recalculate_points!
-    update!(
-      points_awarded:
-        Predictions::ScoreCalculator
-          .new(self)
-          .call
-    )
+    update_columns(points_awarded: Predictions::ScoreCalculator.new(self).call)
   end
 
   private

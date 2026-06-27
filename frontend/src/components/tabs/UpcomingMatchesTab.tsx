@@ -5,12 +5,58 @@ import type { Match, MatchStage } from '@/types/match';
 import type { StageFilter, GroupFilter } from '@/components/MatchFilterBar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+function KnockoutDisclaimer({ language }: { language: string }) {
+  if (language === 'es') {
+    return (
+      <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <p className="font-semibold mb-2">⚽ Nueva fase — ¿cómo se cuentan los puntos?</p>
+        <ul className="space-y-1.5 text-xs leading-relaxed">
+          <li>
+            <span className="font-medium">El resultado que predices</span> es el marcador al final
+            del tiempo reglamentario <span className="font-medium">incluyendo el alargue</span> (prórroga).
+          </li>
+          <li>
+            Si el partido termina en empate y se va a penales, puedes ganar
+            <span className="font-medium"> +2 puntos extra</span> si aciertas al equipo ganador en la tanda.
+          </li>
+          <li>
+            Los puntos de penales son <span className="font-medium">completamente independientes</span> del
+            resultado que predijiste. Por ejemplo: si predijiste 2–1 a favor del equipo A pero seleccionaste
+            que el equipo B gana los penales, igual ganas los +2 si B gana la tanda.
+          </li>
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <p className="font-semibold mb-2">⚽ Knockout phase — how are points counted?</p>
+      <ul className="space-y-1.5 text-xs leading-relaxed">
+        <li>
+          <span className="font-medium">The score you predict</span> is the result at the end
+          of regular time <span className="font-medium">including extra time</span> (if played).
+        </li>
+        <li>
+          If the match ends in a draw and goes to a penalty shootout, you can earn
+          <span className="font-medium"> +2 extra points</span> by picking the correct winner.
+        </li>
+        <li>
+          Penalty points are <span className="font-medium">completely independent</span> from
+          your score prediction. For example: if you predicted a 2–1 win for team A but picked
+          team B to win on penalties, you still earn the +2 if team B wins the shootout.
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 type Props = {
   matches: Match[];
 };
 
 export function UpcomingMatchesTab({ matches }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [onlyMissing, setOnlyMissing] = useState(false);
   const [selectedStage, setSelectedStage] = useState<StageFilter>('all');
   const [selectedGroup, setSelectedGroup] = useState<GroupFilter>('all');
@@ -42,9 +88,12 @@ export function UpcomingMatchesTab({ matches }: Props) {
   }
 
   const missingCount = matches.filter((m) => m.prediction === null).length;
+  const hasKnockout = matches.some((m) => m.stage !== 'group_stage');
 
   return (
     <div>
+      {hasKnockout && <KnockoutDisclaimer language={language} />}
+
       {/* Stage + group filter bar */}
       <MatchFilterBar
         availableStages={availableStages}

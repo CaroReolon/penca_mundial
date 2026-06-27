@@ -308,7 +308,7 @@ function NewMatchForm({
         stage,
         home_team_id: homeTeamId ? Number(homeTeamId) : (undefined as any),
         away_team_id: awayTeamId ? Number(awayTeamId) : (undefined as any),
-        kickoff_at: kickoff,
+        kickoff_at: new Date(kickoff).toISOString(),
         stadium,
         stadium_en: stadiumEn,
       });
