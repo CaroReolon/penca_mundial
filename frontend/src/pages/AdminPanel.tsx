@@ -279,6 +279,26 @@ function ResultRow({
   );
 }
 
+const STADIUMS: { es: string; en: string }[] = [
+  { es: 'Estadio Atlanta',                  en: 'Atlanta Stadium' },
+  { es: 'Estadio Bahía de San Francisco',   en: 'San Francisco Bay Stadium' },
+  { es: 'Estadio Boston',                   en: 'Boston Stadium' },
+  { es: 'Estadio Ciudad de México',         en: 'Mexico City Stadium' },
+  { es: 'Estadio Dallas',                   en: 'Dallas Stadium' },
+  { es: 'Estadio Filadelfia',               en: 'Philadelphia Stadium' },
+  { es: 'Estadio Guadalajara',              en: 'Guadalajara Stadium' },
+  { es: 'Estadio Houston',                  en: 'Houston Stadium' },
+  { es: 'Estadio Kansas City',              en: 'Kansas City Stadium' },
+  { es: 'Estadio Los Ángeles',              en: 'Los Angeles Stadium' },
+  { es: 'Estadio Miami',                    en: 'Miami Stadium' },
+  { es: 'Estadio Monterrey',                en: 'Monterrey Stadium' },
+  { es: 'Estadio Nueva York Nueva Jersey',  en: 'New York New Jersey Stadium' },
+  { es: 'Estadio Seattle',                  en: 'Seattle Stadium' },
+  { es: 'Estadio Toronto',                  en: 'Toronto Stadium' },
+  { es: 'Estadio Vancouver',                en: 'Vancouver Stadium' },
+  { es: 'BC Place Vancouver',               en: 'BC Place Vancouver' },
+];
+
 // ── New knockout match form ───────────────────────────────────────
 function NewMatchForm({
   teams,
@@ -291,8 +311,7 @@ function NewMatchForm({
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
   const [kickoff, setKickoff] = useState('');
-  const [stadium, setStadium] = useState('');
-  const [stadiumEn, setStadiumEn] = useState('');
+  const [stadiumIdx, setStadiumIdx] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -310,15 +329,14 @@ function NewMatchForm({
         home_team_id: homeTeamId ? Number(homeTeamId) : (undefined as any),
         away_team_id: awayTeamId ? Number(awayTeamId) : (undefined as any),
         kickoff_at: new Date(kickoff).toISOString(),
-        stadium,
-        stadium_en: stadiumEn,
+        stadium: stadiumIdx !== '' ? STADIUMS[Number(stadiumIdx)].es : '',
+        stadium_en: stadiumIdx !== '' ? STADIUMS[Number(stadiumIdx)].en : '',
       });
       onCreated(m);
       setHomeTeamId('');
       setAwayTeamId('');
       setKickoff('');
-      setStadium('');
-      setStadiumEn('');
+      setStadiumIdx('');
     } catch (err: any) {
       setError(err?.response?.data?.errors?.join(', ') ?? 'Error al guardar');
     } finally {
@@ -369,25 +387,18 @@ function NewMatchForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs text-gray-500">Estadio (ES)</Label>
-          <Input
-            value={stadium}
-            onChange={(e) => setStadium(e.target.value)}
-            placeholder="Estadio Azteca"
-            className="h-9"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs text-gray-500">Estadio (EN)</Label>
-          <Input
-            value={stadiumEn}
-            onChange={(e) => setStadiumEn(e.target.value)}
-            placeholder="Azteca Stadium"
-            className="h-9"
-          />
-        </div>
+      <div className="space-y-1">
+        <Label className="text-xs text-gray-500">Estadio</Label>
+        <select
+          className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+          value={stadiumIdx}
+          onChange={(e) => setStadiumIdx(e.target.value)}
+        >
+          <option value="">— Seleccionar estadio —</option>
+          {STADIUMS.map((s, i) => (
+            <option key={i} value={String(i)}>{s.es}</option>
+          ))}
+        </select>
       </div>
 
       {error && (
