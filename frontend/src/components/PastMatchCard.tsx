@@ -121,7 +121,7 @@ export function PastMatchCard({ match, predictionLabel }: Props) {
         </div>
       )}
 
-      <div className={`mb-2 text-center text-sm font-medium ${status !== 'finished' ? 'mt-6' : ''}`}>
+      <div className={`mb-2 text-center text-sm font-medium ${status !== 'finished' ? 'mt-6' : 'mt-4'}`}>
         {match.stage === 'group_stage' ? (
           <span className="text-muted-foreground">
             {t('match.group')} {match.group}

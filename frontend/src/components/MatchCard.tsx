@@ -7,7 +7,12 @@ import type { Match } from '@/types/match';
 import { isKnockoutStage } from '@/types/match';
 import { predictionService } from '@/services/predictionService';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { teamName, teamShortName, stadiumName, formatKickoff } from '@/lib/localize';
+import {
+  teamName,
+  teamShortName,
+  stadiumName,
+  formatKickoff,
+} from '@/lib/localize';
 
 type Props = {
   match: Match;
@@ -37,7 +42,10 @@ export function MatchCard({ match }: Props) {
     awayScore !== prediction?.away_score ||
     (showPenaltyPicker && penaltyWinner !== savedPenaltyWinner);
 
-  const canSave = homeScore !== null && awayScore !== null && hasChanges &&
+  const canSave =
+    homeScore !== null &&
+    awayScore !== null &&
+    hasChanges &&
     (!showPenaltyPicker || penaltyWinner !== null);
 
   const handleSave = async () => {
@@ -78,7 +86,7 @@ export function MatchCard({ match }: Props) {
 
   const homeShort = teamShortName(match.home_team, language);
   const awayShort = teamShortName(match.away_team, language);
-  const stadium   = stadiumName(match, language);
+  const stadium = stadiumName(match, language);
 
   return (
     <Card className="flex flex-col justify-between overflow-hidden p-5 transition-all hover:shadow-md">
@@ -195,10 +203,22 @@ export function MatchCard({ match }: Props) {
 
         {showPenaltyPicker && (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
-            <p className="mb-2 text-center text-xs font-semibold text-amber-800">
-              🥅 {language === 'en' ? 'Who wins on penalties?' : '¿Quién gana en penales?'}
+            <p className="mb-5 text-center text-xs font-semibold text-amber-800">
+              {language === 'en' ? (
+                <>
+                  🥅 If it goes to penalties,
+                  <br />
+                  who do you think wins?
+                </>
+              ) : (
+                <>
+                  🥅 En caso de penales,
+                  <br />
+                  ¿quién crees que gana?
+                </>
+              )}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               <button
                 type="button"
                 onClick={() => setPenaltyWinner(match.home_team.id)}

@@ -48,6 +48,7 @@ class Api::MatchGroupPredictionsController < ApplicationController
   def serialize_team(team)
     return nil unless team
     {
+      id:            team.id,
       name:          team.name,
       name_en:       team.name_en,
       short_name:    team.short_name,

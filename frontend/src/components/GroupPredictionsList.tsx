@@ -82,8 +82,38 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
     </div>;
   }
 
+  const isKnockout = match?.stage !== 'group_stage';
+  const wentToPenalties = match?.went_to_penalties ?? false;
+  const matchPenWinner = match?.penalty_winner_team_id ?? null;
+  const homeShort = match ? teamShortName(match.home_team, language) : '';
+  const awayShort = match ? teamShortName(match.away_team, language) : '';
+
   return (
     <div className="space-y-3">
+
+      {/* Penalty result — under match score, only when completed knockout */}
+      {match?.completed && isKnockout && (
+        <div className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs ${
+          wentToPenalties && matchPenWinner
+            ? 'border-amber-200 bg-amber-50 text-amber-800'
+            : 'border-gray-100 bg-gray-50 text-gray-400'
+        }`}>
+          <span>🥅</span>
+          {wentToPenalties && matchPenWinner ? (
+            <span>
+              <span className="font-semibold">
+                {matchPenWinner === match.home_team.id ? match.home_team.flag : match.away_team.flag}
+                {' '}
+                {matchPenWinner === match.home_team.id ? homeShort : awayShort}
+              </span>
+              {' '}{language === 'es' ? 'ganó en penales' : 'won on penalties'}
+            </span>
+          ) : (
+            <span className="italic">{language === 'es' ? 'No hubo penales' : 'No penalty shootout'}</span>
+          )}
+        </div>
+      )}
+
       {/* Group tabs */}
       {groups.length > 1 && (
         <div className="flex gap-2 flex-wrap">
@@ -114,15 +144,29 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
         <div className="divide-y rounded-lg border overflow-hidden">
           {sorted.map((member) => {
             const pts = member.prediction?.points_awarded ?? null;
-            const isKnockout = match?.stage !== 'group_stage';
-            const wentToPenalties = match?.went_to_penalties ?? false;
-            const matchPenWinner = match?.penalty_winner_team_id ?? null;
             const userPenWinner = member.prediction?.penalty_winner_team_id ?? null;
             const penCorrect = wentToPenalties && matchPenWinner != null && userPenWinner === matchPenWinner;
 
+            // Penalty badge — shown when knockout and prediction exists
+            const penBadge = isKnockout && member.prediction ? (() => {
+              if (userPenWinner == null) return null;
+              const team = userPenWinner === match?.home_team?.id ? match?.home_team : match?.away_team;
+              const correct = match?.completed && wentToPenalties && penCorrect;
+              const wrong = match?.completed && wentToPenalties && !penCorrect && matchPenWinner != null;
+              return (
+                <span className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] font-semibold shrink-0 ${
+                  correct ? 'border-green-300 bg-green-50 text-green-800' :
+                  wrong   ? 'border-red-200 bg-red-50 text-red-700' :
+                            'border-gray-200 bg-gray-100 text-gray-400'
+                }`}>
+                  🥅 {team?.flag} {team ? teamShortName(team, language) : '?'}
+                </span>
+              );
+            })() : null;
+
             return (
               <div key={member.id} className="px-3 py-2.5 bg-white">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Avatar className="h-7 w-7 shrink-0">
                     {member.avatar_url && <AvatarImage src={member.avatar_url} alt={member.name} />}
                     <AvatarFallback className="text-[10px]">{getInitials(member.name)}</AvatarFallback>
@@ -130,6 +174,7 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-xs truncate">{member.name}</p>
                   </div>
+                  {penBadge}
                   {member.prediction ? (
                     <span className="text-sm font-bold tabular-nums shrink-0">
                       {member.prediction.home_score} - {member.prediction.away_score}
@@ -145,48 +190,6 @@ export function GroupPredictionsList({ matchId }: { matchId: string | number }) 
                     <span className="w-8" />
                   )}
                 </div>
-
-                {/* Penalty pick — knockout matches only */}
-                {isKnockout && member.prediction && (
-                  <div className="ml-10 mt-1 flex items-center gap-1.5">
-                    <span className="text-[10px] text-muted-foreground">🥅</span>
-                    {userPenWinner != null ? (() => {
-                      const team = userPenWinner === match?.home_team?.id ? match?.home_team : match?.away_team;
-                      const correct = wentToPenalties && penCorrect;
-                      const wrong = wentToPenalties && !penCorrect && matchPenWinner != null;
-                      return (
-                        <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
-                          correct ? 'border-green-300 bg-green-50 text-green-800' :
-                          wrong   ? 'border-red-200 bg-red-50 text-red-700' :
-                                    'border-gray-200 bg-gray-50 text-gray-500'
-                        }`}>
-                          {team?.flag} {team ? teamShortName(team, language) : '?'}
-                          {correct && <span className="ml-0.5 text-green-700">+2</span>}
-                        </span>
-                      );
-                    })() : (
-                      <span className="text-[10px] text-muted-foreground italic">
-                        {language === 'es' ? 'sin elección' : 'no pick'}
-                      </span>
-                    )}
-                    {wentToPenalties && matchPenWinner != null && (
-                      <>
-                        <span className="text-[10px] text-gray-300">→</span>
-                        <span className="text-[10px] text-gray-500">
-                          {(() => {
-                            const winner = matchPenWinner === match?.home_team?.id ? match?.home_team : match?.away_team;
-                            return `${winner?.flag} ${winner ? teamShortName(winner, language) : '?'}`;
-                          })()}
-                        </span>
-                      </>
-                    )}
-                    {!wentToPenalties && (
-                      <span className="text-[10px] text-muted-foreground italic">
-                        ({language === 'es' ? 'no hubo penales' : 'no pens'})
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             );
           })}
